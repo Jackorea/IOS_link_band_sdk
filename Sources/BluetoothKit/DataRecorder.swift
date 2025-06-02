@@ -1,0 +1,389 @@
+import Foundation
+
+// MARK: - Data Recorder
+
+/// Class responsible for recording sensor data to files.
+///
+/// Provides functionality to record EEG, PPG, accelerometer, and battery data
+/// to CSV and JSON files with proper concurrency safety.
+public class DataRecorder: @unchecked Sendable {
+    
+    // MARK: - Properties
+    
+    public weak var delegate: DataRecorderDelegate?
+    
+    private var recordingState: RecordingState = .idle
+    private var recordingStartDate: Date?
+    private var recordingTimer: Timer?
+    private let logger: BluetoothKitLogger
+    
+    // File writers - using a serial queue for thread safety
+    private let fileQueue = DispatchQueue(label: "com.bluetoothkit.filewriter", qos: .utility)
+    private var eegCsvWriter: FileWriter?
+    private var ppgCsvWriter: FileWriter?
+    private var accelCsvWriter: FileWriter?
+    private var rawDataWriter: FileWriter?
+    
+    // Raw data storage for JSON - protected by main actor
+    private var rawDataDict: [String: Any] = [:]
+    
+    // File URLs
+    private var currentRecordingFiles: [URL] = []
+    
+    // MARK: - Initialization
+    
+    /// Creates a new DataRecorder instance.
+    ///
+    /// - Parameter logger: Logger implementation for debugging
+    public init(logger: BluetoothKitLogger = DefaultLogger()) {
+        self.logger = logger
+        initializeRawDataDict()
+        log("DataRecorder initialized", level: .debug)
+    }
+    
+    deinit {
+        if recordingState.isRecording {
+            stopRecording()
+        }
+    }
+    
+    // MARK: - Public Interface
+    
+    public var isRecording: Bool {
+        return recordingState.isRecording
+    }
+    
+    public var recordingsDirectory: URL {
+        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        return paths[0]
+    }
+    
+    public func getRecordedFiles() -> [URL] {
+        return (try? FileManager.default.contentsOfDirectory(
+            at: recordingsDirectory,
+            includingPropertiesForKeys: nil
+        )) ?? []
+    }
+    
+    public func startRecording() {
+        guard recordingState == .idle else {
+            let error = BluetoothKitError.recordingFailed("Already recording")
+            log("Failed to start recording: Already recording", level: .warning)
+            notifyRecordingError(error)
+            return
+        }
+        
+        do {
+            try setupRecordingFiles()
+            recordingState = .recording
+            recordingStartDate = Date()
+            startRecordingTimer()
+            
+            let startDate = recordingStartDate!
+            notifyRecordingStarted(at: startDate)
+            log("Recording started", level: .info)
+        } catch {
+            notifyRecordingError(error)
+            log("Failed to start recording: \(error.localizedDescription)", level: .error)
+        }
+    }
+    
+    public func stopRecording() {
+        guard recordingState == .recording else { return }
+        
+        recordingState = .stopping
+        stopRecordingTimer()
+        
+        do {
+            try finalizeRecording()
+            recordingState = .idle
+            
+            let endDate = Date()
+            let savedFiles = currentRecordingFiles
+            notifyRecordingStopped(at: endDate, savedFiles: savedFiles)
+            log("Recording stopped. Files saved: \(currentRecordingFiles.count)", level: .info)
+        } catch {
+            recordingState = .idle
+            notifyRecordingError(error)
+            log("Failed to stop recording: \(error.localizedDescription)", level: .error)
+        }
+    }
+    
+    // MARK: - Data Recording Methods
+    
+    public func recordEEGData(_ readings: [EEGReading]) {
+        guard isRecording else { return }
+        
+        for reading in readings {
+            // Add to raw data dict
+            appendToRawDataDict("eegChannel1", value: reading.channel1)
+            appendToRawDataDict("eegChannel2", value: reading.channel2)
+            appendToRawDataDict("eegLeadOff", value: reading.leadOff ? 1 : 0)
+            
+            // Write to CSV
+            if let writer = eegCsvWriter {
+                let timestamp = reading.timestamp.timeIntervalSince1970
+                let line = "\(timestamp),\(reading.ch1Raw),\(reading.ch2Raw),\(reading.channel1),\(reading.channel2),\(reading.leadOff ? 1 : 0)\n"
+                writer.write(line)
+            }
+        }
+    }
+    
+    public func recordPPGData(_ readings: [PPGReading]) {
+        guard isRecording else { return }
+        
+        for reading in readings {
+            // Add to raw data dict
+            appendToRawDataDict("ppgRed", value: reading.red)
+            appendToRawDataDict("ppgIr", value: reading.ir)
+            
+            // Write to CSV
+            if let writer = ppgCsvWriter {
+                let timestamp = reading.timestamp.timeIntervalSince1970
+                let line = "\(timestamp),\(reading.red),\(reading.ir)\n"
+                writer.write(line)
+            }
+        }
+    }
+    
+    public func recordAccelerometerData(_ readings: [AccelerometerReading]) {
+        guard isRecording else { return }
+        
+        for reading in readings {
+            // Add to raw data dict
+            appendToRawDataDict("accelX", value: Int(reading.x))
+            appendToRawDataDict("accelY", value: Int(reading.y))
+            appendToRawDataDict("accelZ", value: Int(reading.z))
+            
+            // Write to CSV
+            if let writer = accelCsvWriter {
+                let timestamp = reading.timestamp.timeIntervalSince1970
+                let line = "\(timestamp),\(reading.x),\(reading.y),\(reading.z)\n"
+                writer.write(line)
+            }
+        }
+    }
+    
+    public func recordBatteryData(_ reading: BatteryReading) {
+        guard isRecording else { return }
+        
+        // Battery data is not typically recorded in bulk, just logged
+        log("Battery: \(reading.level)%", level: .debug)
+    }
+    
+    // MARK: - Private Methods
+    
+    private func initializeRawDataDict() {
+        rawDataDict = [
+            "timestamp": [Double](),
+            "eegChannel1": [Double](),
+            "eegChannel2": [Double](),
+            "eegLeadOff": [Int](),
+            "ppgRed": [Int](),
+            "ppgIr": [Int](),
+            "accelX": [Int](),
+            "accelY": [Int](),
+            "accelZ": [Int]()
+        ]
+    }
+    
+    private func setupRecordingFiles() throws {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyyMMdd_HHmmss"
+        let timestampString = dateFormatter.string(from: Date())
+        
+        currentRecordingFiles = []
+        
+        // Setup JSON file
+        let rawDataURL = recordingsDirectory.appendingPathComponent("raw_data_\(timestampString).json")
+        try setupJSONFile(at: rawDataURL)
+        
+        // Setup CSV files
+        let csvTimestampString = DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .medium)
+            .replacingOccurrences(of: " ", with: "_")
+            .replacingOccurrences(of: ":", with: "-")
+            .replacingOccurrences(of: "/", with: "-")
+        
+        try setupEEGCSVFile(timestamp: csvTimestampString)
+        try setupPPGCSVFile(timestamp: csvTimestampString)
+        try setupAccelCSVFile(timestamp: csvTimestampString)
+        
+        initializeRawDataDict()
+    }
+    
+    private func setupJSONFile(at url: URL) throws {
+        FileManager.default.createFile(atPath: url.path, contents: nil, attributes: nil)
+        guard let handle = try? FileHandle(forWritingTo: url) else {
+            throw BluetoothKitError.fileOperationFailed("Could not create JSON file")
+        }
+        rawDataWriter = FileWriter(fileHandle: handle)
+        currentRecordingFiles.append(url)
+    }
+    
+    private func setupEEGCSVFile(timestamp: String) throws {
+        let eegCsvURL = recordingsDirectory.appendingPathComponent("eeg_data_\(timestamp).csv")
+        FileManager.default.createFile(atPath: eegCsvURL.path, contents: nil, attributes: nil)
+        guard let handle = try? FileHandle(forWritingTo: eegCsvURL) else {
+            throw BluetoothKitError.fileOperationFailed("Could not create EEG CSV file")
+        }
+        let writer = FileWriter(fileHandle: handle)
+        writer.write("timestamp,ch1Raw,ch2Raw,ch1uV,ch2uV,leadOff\n")
+        eegCsvWriter = writer
+        currentRecordingFiles.append(eegCsvURL)
+    }
+    
+    private func setupPPGCSVFile(timestamp: String) throws {
+        let ppgCsvURL = recordingsDirectory.appendingPathComponent("ppg_data_\(timestamp).csv")
+        FileManager.default.createFile(atPath: ppgCsvURL.path, contents: nil, attributes: nil)
+        guard let handle = try? FileHandle(forWritingTo: ppgCsvURL) else {
+            throw BluetoothKitError.fileOperationFailed("Could not create PPG CSV file")
+        }
+        let writer = FileWriter(fileHandle: handle)
+        writer.write("timestamp,red,ir\n")
+        ppgCsvWriter = writer
+        currentRecordingFiles.append(ppgCsvURL)
+    }
+    
+    private func setupAccelCSVFile(timestamp: String) throws {
+        let accelCsvURL = recordingsDirectory.appendingPathComponent("accel_data_\(timestamp).csv")
+        FileManager.default.createFile(atPath: accelCsvURL.path, contents: nil, attributes: nil)
+        guard let handle = try? FileHandle(forWritingTo: accelCsvURL) else {
+            throw BluetoothKitError.fileOperationFailed("Could not create Accelerometer CSV file")
+        }
+        let writer = FileWriter(fileHandle: handle)
+        writer.write("timestamp,x,y,z\n")
+        accelCsvWriter = writer
+        currentRecordingFiles.append(accelCsvURL)
+    }
+    
+    private func startRecordingTimer() {
+        recordingTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            guard let self = self, self.isRecording else { return }
+            let currentTime = Date().timeIntervalSince1970 * 1000 // 밀리세컨드 단위
+            self.appendToRawDataDict("timestamp", value: currentTime)
+        }
+    }
+    
+    private func stopRecordingTimer() {
+        recordingTimer?.invalidate()
+        recordingTimer = nil
+    }
+    
+    private func appendToRawDataDict<T>(_ key: String, value: T) {
+        if var array = rawDataDict[key] as? [T] {
+            array.append(value)
+            rawDataDict[key] = array
+        }
+    }
+    
+    private func finalizeRecording() throws {
+        // Save JSON file
+        if let handle = rawDataWriter?.fileHandle {
+            let encodableData = SensorDataJSON(
+                timestamp: rawDataDict["timestamp"] as? [Double] ?? [],
+                eegChannel1: rawDataDict["eegChannel1"] as? [Double] ?? [],
+                eegChannel2: rawDataDict["eegChannel2"] as? [Double] ?? [],
+                eegLeadOff: rawDataDict["eegLeadOff"] as? [Int] ?? [],
+                ppgRed: rawDataDict["ppgRed"] as? [Int] ?? [],
+                ppgIr: rawDataDict["ppgIr"] as? [Int] ?? [],
+                accelX: rawDataDict["accelX"] as? [Int] ?? [],
+                accelY: rawDataDict["accelY"] as? [Int] ?? [],
+                accelZ: rawDataDict["accelZ"] as? [Int] ?? []
+            )
+            
+            do {
+                let jsonData = try JSONEncoder().encode(encodableData)
+                handle.seek(toFileOffset: 0)
+                handle.write(jsonData)
+            } catch {
+                throw BluetoothKitError.fileOperationFailed("Failed to encode JSON: \(error)")
+            }
+            
+            if #available(iOS 13.0, macOS 10.15, *) {
+                try? handle.close()
+            }
+        }
+        
+        // Close all CSV files
+        if #available(iOS 13.0, macOS 10.15, *) {
+            try? eegCsvWriter?.fileHandle.close()
+            try? ppgCsvWriter?.fileHandle.close()
+            try? accelCsvWriter?.fileHandle.close()
+        }
+        
+        // Reset writers
+        rawDataWriter = nil
+        eegCsvWriter = nil
+        ppgCsvWriter = nil
+        accelCsvWriter = nil
+    }
+    
+    private func log(_ message: String, level: LogLevel, file: String = #file, function: String = #function, line: Int = #line) {
+        logger.log(message, level: level, file: file, function: function, line: line)
+    }
+    
+    // MARK: - Private Helper Methods for Safe Delegate Calls
+    
+    private func notifyRecordingStarted(at date: Date) {
+        if Thread.isMainThread {
+            delegate?.dataRecorder(self, didStartRecording: date)
+        } else {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.delegate?.dataRecorder(self, didStartRecording: date)
+            }
+        }
+    }
+    
+    private func notifyRecordingStopped(at date: Date, savedFiles: [URL]) {
+        if Thread.isMainThread {
+            delegate?.dataRecorder(self, didStopRecording: date, savedFiles: savedFiles)
+        } else {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.delegate?.dataRecorder(self, didStopRecording: date, savedFiles: savedFiles)
+            }
+        }
+    }
+    
+    private func notifyRecordingError(_ error: Error) {
+        if Thread.isMainThread {
+            delegate?.dataRecorder(self, didFailWithError: error)
+        } else {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.delegate?.dataRecorder(self, didFailWithError: error)
+            }
+        }
+    }
+}
+
+// MARK: - File Writer Helper
+
+private class FileWriter {
+    let fileHandle: FileHandle
+    
+    init(fileHandle: FileHandle) {
+        self.fileHandle = fileHandle
+    }
+    
+    func write(_ string: String) {
+        if let data = string.data(using: .utf8) {
+            fileHandle.write(data)
+        }
+    }
+}
+
+// MARK: - JSON Data Structure
+
+private struct SensorDataJSON: Encodable {
+    let timestamp: [Double]
+    let eegChannel1: [Double]
+    let eegChannel2: [Double]
+    let eegLeadOff: [Int]
+    let ppgRed: [Int]
+    let ppgIr: [Int]
+    let accelX: [Int]
+    let accelY: [Int]
+    let accelZ: [Int]
+} 
