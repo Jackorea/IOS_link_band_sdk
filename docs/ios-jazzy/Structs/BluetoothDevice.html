@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>BluetoothDevice Structure Reference</title>
+    <link rel="stylesheet" type="text/css" href="../css/jazzy.css" />
+    <link rel="stylesheet" type="text/css" href="../css/highlight.css" />
+    <meta charset='utf-8'>
+    <script src="../js/jquery.min.js" defer></script>
+    <script src="../js/jazzy.js" defer></script>
+    
+    <script src="../js/lunr.min.js" defer></script>
+    <script src="../js/typeahead.jquery.js" defer></script>
+    <script src="../js/jazzy.search.js" defer></script>
+  </head>
+  <body>
+    <a name="//apple_ref/swift/Struct/BluetoothDevice" class="dashAnchor"></a>
+    <a title="BluetoothDevice Structure Reference"></a>
+    <header>
+      <div class="content-wrapper">
+        <p><a href="../index.html">BluetoothKit Docs</a> (100% documented)</p>
+        <div class="header-right">
+          <form role="search" action="../search.json">
+            <input type="text" placeholder="Search documentation" data-typeahead>
+          </form>
+        </div>
+      </div>
+    </header>
+    <div class="content-wrapper">
+      <p id="breadcrumbs">
+        <a href="../index.html">BluetoothKit</a>
+        <img id="carat" src="../img/carat.png" alt=""/>
+        <a href="../Structs.html">Structures</a>
+        <img id="carat" src="../img/carat.png" alt=""/>
+        BluetoothDevice Structure Reference
+      </p>
+    </div>
+    <div class="content-wrapper">
+      <nav class="sidebar">
+        <ul class="nav-groups">
+          <li class="nav-group-name">
+            <a href="../Classes.html">Classes</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Classes/BluetoothKit.html">BluetoothKit</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BluetoothManager.html">BluetoothManager</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/DataRecorder.html">DataRecorder</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Enums.html">Enumerations</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Enums/BluetoothKitError.html">BluetoothKitError</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/ConnectionState.html">ConnectionState</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/LogLevel.html">LogLevel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/RecordingState.html">RecordingState</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Protocols.html">Protocols</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Protocols/BluetoothKitLogger.html">BluetoothKitLogger</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/BluetoothManagerDelegate.html">BluetoothManagerDelegate</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/DataRecorderDelegate.html">DataRecorderDelegate</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/SensorDataDelegate.html">SensorDataDelegate</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Structs.html">Structures</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Structs/AccelerometerReading.html">AccelerometerReading</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/BatteryReading.html">BatteryReading</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/BluetoothDevice.html">BluetoothDevice</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/DefaultLogger.html">DefaultLogger</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/EEGReading.html">EEGReading</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PPGReading.html">PPGReading</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/SensorConfiguration.html">SensorConfiguration</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/SilentLogger.html">SilentLogger</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <article class="main-content">
+        <section>
+          <section class="section">
+            <h1>BluetoothDevice</h1>
+              <div class="declaration">
+                <div class="language">
+                  
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BluetoothDevice</span> <span class="p">:</span> <span class="kt">Identifiable</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kd">@unchecked</span> <span class="kt">Sendable</span></code></pre>
+
+                </div>
+              </div>
+            <p>Bluetooth Low Energy 디바이스를 나타내는 구조체입니다.</p>
+
+<p>이 구조체는 스캔 중 발견된 BLE 디바이스의 정보를 캡슐화합니다.
+각 디바이스는 고유한 식별자를 가지며, Core Bluetooth 페리페럴 객체와
+디바이스의 표시 이름, 신호 강도 정보를 포함합니다.</p>
+<h2 id='예시' class='heading'>예시</h2>
+<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">device</span> <span class="o">=</span> <span class="kt">BluetoothDevice</span><span class="p">(</span>
+    <span class="nv">peripheral</span><span class="p">:</span> <span class="n">cbPeripheral</span><span class="p">,</span>
+    <span class="nv">name</span><span class="p">:</span> <span class="s">"LXB-001"</span><span class="p">,</span>
+    <span class="nv">rssi</span><span class="p">:</span> <span class="o">-</span><span class="mi">45</span>
+<span class="p">)</span>
+<span class="nf">print</span><span class="p">(</span><span class="s">"디바이스: </span><span class="se">\(</span><span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="se">)</span><span class="s">, 신호강도: </span><span class="se">\(</span><span class="n">device</span><span class="o">.</span><span class="n">rssi</span><span class="se">)</span><span class="s">dBm"</span><span class="p">)</span>
+</code></pre>
+
+          </section>
+          <section class="section task-group-section">
+            <div class="task-group">
+              <ul>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12BluetoothKit0A6DeviceV2id10Foundation4UUIDVvp"></a>
+                    <a name="//apple_ref/swift/Property/id" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12BluetoothKit0A6DeviceV2id10Foundation4UUIDVvp">id</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>SwiftUI 목록에서 사용되는 고유 식별자입니다.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">id</span><span class="p">:</span> <span class="kt">UUID</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12BluetoothKit0A6DeviceV10peripheralSo12CBPeripheralCvp"></a>
+                    <a name="//apple_ref/swift/Property/peripheral" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12BluetoothKit0A6DeviceV10peripheralSo12CBPeripheralCvp">peripheral</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Core Bluetooth 페리페럴 객체입니다.</p>
+
+<p>실제 BLE 통신을 위해 사용되는 CBPeripheral 인스턴스입니다.
+연결, 서비스 검색, 특성 읽기/쓰기 등의 작업에 사용됩니다.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">peripheral</span><span class="p">:</span> <span class="kt">CBPeripheral</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12BluetoothKit0A6DeviceV4nameSSvp"></a>
+                    <a name="//apple_ref/swift/Property/name" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12BluetoothKit0A6DeviceV4nameSSvp">name</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>디바이스의 표시 이름입니다.</p>
+
+<p>BLE 광고에서 가져온 디바이스 이름 또는 사용자 정의 이름입니다.
+일반적으로 &ldquo;LXB-&rdquo; 접두사를 가진 형태입니다.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">name</span><span class="p">:</span> <span class="kt">String</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12BluetoothKit0A6DeviceV4rssiSo8NSNumberCSgvp"></a>
+                    <a name="//apple_ref/swift/Property/rssi" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12BluetoothKit0A6DeviceV4rssiSo8NSNumberCSgvp">rssi</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>수신 신호 강도 표시값(RSSI)입니다.</p>
+
+<p>dBm 단위로 측정된 신호 강도를 나타냅니다.
+값이 0에 가까울수록 신호가 강하며, 일반적으로 -30에서 -100 범위입니다.
+디바이스가 스캔 중이 아닐 때는 <code>nil</code>일 수 있습니다.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">rssi</span><span class="p">:</span> <span class="kt">NSNumber</span><span class="p">?</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12BluetoothKit0A6DeviceV10peripheral4name4rssiACSo12CBPeripheralC_SSSo8NSNumberCSgtcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(peripheral:name:rssi:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12BluetoothKit0A6DeviceV10peripheral4name4rssiACSo12CBPeripheralC_SSSo8NSNumberCSgtcfc">init(peripheral:<wbr>name:<wbr>rssi:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>새로운 BluetoothDevice 인스턴스를 생성합니다.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">peripheral</span><span class="p">:</span> <span class="kt">CBPeripheral</span><span class="p">,</span> <span class="nv">name</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">rssi</span><span class="p">:</span> <span class="kt">NSNumber</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>peripheral</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Core Bluetooth 페리페럴 객체</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>name</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>디바이스 표시 이름</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>rssi</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>신호 강도 (dBm, 선택사항)</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12BluetoothKit0A6DeviceV2eeoiySbAC_ACtFZ"></a>
+                    <a name="//apple_ref/swift/Method/==(_:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12BluetoothKit0A6DeviceV2eeoiySbAC_ACtFZ">==(_:<wbr>_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>두 BluetoothDevice가 동일한지 비교합니다.</p>
+
+<p>페리페럴의 식별자를 기준으로 동등성을 판단합니다.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="o">==</span> <span class="p">(</span><span class="nv">lhs</span><span class="p">:</span> <span class="kt">BluetoothDevice</span><span class="p">,</span> <span class="nv">rhs</span><span class="p">:</span> <span class="kt">BluetoothDevice</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Bool</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </section>
+        </section>
+        <section id="footer">
+          <p>&copy; 2025 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2025-06-04)</p>
+          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
+        </section>
+      </article>
+    </div>
+  </body>
+</html>

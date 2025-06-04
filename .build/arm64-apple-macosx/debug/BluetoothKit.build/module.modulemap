@@ -1,0 +1,4 @@
+module BluetoothKit {
+    header "/Users/jackahn/Desktop/IOS_link_band_sdk/.build/arm64-apple-macosx/debug/BluetoothKit.build/BluetoothKit-Swift.h"
+    requires objc
+}

@@ -2,14 +2,15 @@ import Foundation
 
 // MARK: - Data Recorder
 
-/// Class responsible for recording sensor data to files.
+/// 센서 데이터를 파일로 기록하는 역할을 담당하는 클래스입니다.
 ///
-/// Provides functionality to record EEG, PPG, accelerometer, and battery data
-/// to CSV and JSON files with proper concurrency safety.
+/// EEG, PPG, 가속도계, 배터리 데이터를 CSV 및 JSON 형식으로 기록하는 기능을 제공하며,
+/// 적절한 동시성 안전성을 보장합니다.
 public class DataRecorder: @unchecked Sendable {
     
     // MARK: - Properties
     
+    /// 데이터 기록 이벤트를 처리하는 델리게이트입니다.
     public weak var delegate: DataRecorderDelegate?
     
     private var recordingState: RecordingState = .idle
@@ -32,9 +33,9 @@ public class DataRecorder: @unchecked Sendable {
     
     // MARK: - Initialization
     
-    /// Creates a new DataRecorder instance.
+    /// 새로운 DataRecorder 인스턴스를 생성합니다.
     ///
-    /// - Parameter logger: Logger implementation for debugging
+    /// - Parameter logger: 디버깅을 위한 로거 구현 (기본값: DefaultLogger())
     public init(logger: BluetoothKitLogger = DefaultLogger()) {
         self.logger = logger
         initializeRawDataDict()
@@ -49,15 +50,20 @@ public class DataRecorder: @unchecked Sendable {
     
     // MARK: - Public Interface
     
+    /// 현재 데이터 기록 중인지 여부를 나타냅니다.
     public var isRecording: Bool {
         return recordingState.isRecording
     }
     
+    /// 기록된 파일들이 저장되는 디렉토리 URL을 반환합니다.
     public var recordingsDirectory: URL {
         let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
         return paths[0]
     }
     
+    /// 기록된 파일들의 URL 목록을 반환합니다.
+    ///
+    /// - Returns: 문서 디렉토리에 저장된 모든 기록 파일들의 URL 배열
     public func getRecordedFiles() -> [URL] {
         return (try? FileManager.default.contentsOfDirectory(
             at: recordingsDirectory,
@@ -65,6 +71,10 @@ public class DataRecorder: @unchecked Sendable {
         )) ?? []
     }
     
+    /// 센서 데이터 기록을 시작합니다.
+    ///
+    /// 이미 기록 중인 경우 오류를 발생시킵니다.
+    /// 기록 파일들(CSV, JSON)을 생성하고 기록 상태로 전환합니다.
     public func startRecording() {
         guard recordingState == .idle else {
             let error = BluetoothKitError.recordingFailed("Already recording")
@@ -88,6 +98,10 @@ public class DataRecorder: @unchecked Sendable {
         }
     }
     
+    /// 센서 데이터 기록을 중지합니다.
+    ///
+    /// 기록 중이 아닌 경우 아무 작업도 수행하지 않습니다.
+    /// 모든 파일을 정리하고 기록 완료 이벤트를 발생시킵니다.
     public func stopRecording() {
         guard recordingState == .recording else { return }
         
@@ -111,6 +125,9 @@ public class DataRecorder: @unchecked Sendable {
     
     // MARK: - Data Recording Methods
     
+    /// EEG 데이터를 기록합니다.
+    ///
+    /// - Parameter readings: 기록할 EEG 읽기값 배열
     public func recordEEGData(_ readings: [EEGReading]) {
         guard isRecording else { return }
         
@@ -129,6 +146,9 @@ public class DataRecorder: @unchecked Sendable {
         }
     }
     
+    /// PPG 데이터를 기록합니다.
+    ///
+    /// - Parameter readings: 기록할 PPG 읽기값 배열
     public func recordPPGData(_ readings: [PPGReading]) {
         guard isRecording else { return }
         
@@ -146,6 +166,9 @@ public class DataRecorder: @unchecked Sendable {
         }
     }
     
+    /// 가속도계 데이터를 기록합니다.
+    ///
+    /// - Parameter readings: 기록할 가속도계 읽기값 배열
     public func recordAccelerometerData(_ readings: [AccelerometerReading]) {
         guard isRecording else { return }
         
@@ -164,6 +187,9 @@ public class DataRecorder: @unchecked Sendable {
         }
     }
     
+    /// 배터리 데이터를 기록합니다.
+    ///
+    /// - Parameter reading: 기록할 배터리 읽기값
     public func recordBatteryData(_ reading: BatteryReading) {
         guard isRecording else { return }
         

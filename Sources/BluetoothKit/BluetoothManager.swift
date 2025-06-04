@@ -12,7 +12,10 @@ public class BluetoothManager: NSObject, @unchecked Sendable {
     
     // MARK: - Properties
     
+    /// Bluetooth 연결 상태 변화를 처리하는 델리게이트입니다.
     public weak var delegate: BluetoothManagerDelegate?
+    
+    /// 센서 데이터 수신을 처리하는 델리게이트입니다.
     public weak var sensorDataDelegate: SensorDataDelegate?
     
     private var centralManager: CBCentralManager!
@@ -58,22 +61,30 @@ public class BluetoothManager: NSObject, @unchecked Sendable {
     
     // MARK: - Public Interface
     
+    /// 현재 디바이스 스캔 중인지 여부를 나타냅니다.
     public var isScanning: Bool {
         return centralManager.isScanning
     }
     
+    /// 현재 디바이스에 연결되어 있는지 여부를 나타냅니다.
     public var isConnected: Bool {
         return connectedPeripheral?.state == .connected
     }
     
+    /// 현재 연결 상태를 반환합니다.
     public var currentConnectionState: ConnectionState {
         return connectionState
     }
     
+    /// 스캔 중 발견된 디바이스 목록을 반환합니다.
     public var discoveredDevicesList: [BluetoothDevice] {
         return discoveredDevices
     }
     
+    /// Bluetooth 디바이스 스캔을 시작합니다.
+    ///
+    /// 설정된 디바이스 이름 접두사와 일치하는 디바이스만 검색됩니다.
+    /// Bluetooth가 비활성화된 경우 스캔이 실패할 수 있습니다.
     public func startScanning() {
         guard centralManager.state == .poweredOn else {
             log("Cannot start scanning: Bluetooth not available", level: .warning)
@@ -89,6 +100,7 @@ public class BluetoothManager: NSObject, @unchecked Sendable {
         log("Started scanning for devices", level: .info)
     }
     
+    /// Bluetooth 디바이스 스캔을 중지합니다.
     public func stopScanning() {
         centralManager.stopScan()
         if case .scanning = connectionState {
@@ -97,6 +109,9 @@ public class BluetoothManager: NSObject, @unchecked Sendable {
         log("Stopped scanning", level: .info)
     }
     
+    /// 지정된 디바이스에 연결을 시도합니다.
+    ///
+    /// - Parameter device: 연결할 BluetoothDevice
     public func connect(to device: BluetoothDevice) {
         guard centralManager.state == .poweredOn else {
             log("Cannot connect: Bluetooth not available", level: .warning)
@@ -112,6 +127,7 @@ public class BluetoothManager: NSObject, @unchecked Sendable {
         log("Attempting to connect to \(device.name)", level: .info)
     }
     
+    /// 현재 연결된 디바이스와의 연결을 해제합니다.
     public func disconnect() {
         guard let peripheral = connectedPeripheral else { return }
         
@@ -122,6 +138,9 @@ public class BluetoothManager: NSObject, @unchecked Sendable {
         log("Disconnecting from device", level: .info)
     }
     
+    /// 자동 재연결 기능을 활성화하거나 비활성화합니다.
+    ///
+    /// - Parameter enabled: 자동 재연결 활성화 여부
     public func enableAutoReconnect(_ enabled: Bool) {
         let previousState = isAutoReconnectEnabled
         isAutoReconnectEnabled = enabled
@@ -366,6 +385,12 @@ public class BluetoothManager: NSObject, @unchecked Sendable {
 
 extension BluetoothManager: CBCentralManagerDelegate {
     
+    /// Central Manager의 상태가 변경되었을 때 호출됩니다.
+    ///
+    /// Bluetooth가 켜지거나 꺼지는 등의 상태 변화를 처리하며,
+    /// 연결 상태를 적절히 업데이트합니다.
+    ///
+    /// - Parameter central: 상태가 변경된 Central Manager
     public func centralManagerDidUpdateState(_ central: CBCentralManager) {
         switch central.state {
         case .poweredOn:
@@ -393,6 +418,16 @@ extension BluetoothManager: CBCentralManagerDelegate {
         }
     }
     
+    /// 새로운 BLE 디바이스가 발견되었을 때 호출됩니다.
+    ///
+    /// 설정된 디바이스 이름 필터에 맞는 디바이스를 찾아
+    /// 발견된 디바이스 목록에 추가합니다.
+    ///
+    /// - Parameters:
+    ///   - central: 디바이스를 발견한 Central Manager
+    ///   - peripheral: 발견된 BLE 페리페럴
+    ///   - advertisementData: 광고 데이터
+    ///   - RSSI: 신호 강도 (dBm)
     public func centralManager(_ central: CBCentralManager,
                               didDiscover peripheral: CBPeripheral,
                               advertisementData: [String : Any],
@@ -400,17 +435,41 @@ extension BluetoothManager: CBCentralManagerDelegate {
         handleDeviceDiscovered(peripheral, rssi: RSSI)
     }
     
+    /// 디바이스에 성공적으로 연결되었을 때 호출됩니다.
+    ///
+    /// 연결 후 서비스 검색을 시작하고 연결 상태를 업데이트합니다.
+    ///
+    /// - Parameters:
+    ///   - central: 연결을 수행한 Central Manager
+    ///   - peripheral: 연결된 페리페럴
     public func centralManager(_ central: CBCentralManager,
                               didConnect peripheral: CBPeripheral) {
         handleConnectionSuccess(peripheral)
     }
     
+    /// 디바이스 연결에 실패했을 때 호출됩니다.
+    ///
+    /// 연결 실패 원인을 로그에 기록하고 연결 상태를 실패로 업데이트합니다.
+    ///
+    /// - Parameters:
+    ///   - central: 연결을 시도한 Central Manager
+    ///   - peripheral: 연결에 실패한 페리페럴
+    ///   - error: 연결 실패 원인
     public func centralManager(_ central: CBCentralManager,
                               didFailToConnect peripheral: CBPeripheral,
                               error: Error?) {
         handleConnectionFailure(peripheral, error: error)
     }
     
+    /// 디바이스와의 연결이 해제되었을 때 호출됩니다.
+    ///
+    /// 자동 재연결이 활성화된 경우 재연결을 시도하고,
+    /// 그렇지 않으면 연결 상태를 해제됨으로 업데이트합니다.
+    ///
+    /// - Parameters:
+    ///   - central: 연결 해제를 감지한 Central Manager
+    ///   - peripheral: 연결이 해제된 페리페럴
+    ///   - error: 연결 해제 원인 (자발적 해제인 경우 nil)
     public func centralManager(_ central: CBCentralManager,
                               didDisconnectPeripheral peripheral: CBPeripheral,
                               error: Error?) {
@@ -422,6 +481,13 @@ extension BluetoothManager: CBCentralManagerDelegate {
 
 extension BluetoothManager: CBPeripheralDelegate {
     
+    /// 페리페럴의 서비스가 발견되었을 때 호출됩니다.
+    ///
+    /// 발견된 각 서비스에 대해 특성(Characteristics) 검색을 시작합니다.
+    ///
+    /// - Parameters:
+    ///   - peripheral: 서비스가 발견된 페리페럴
+    ///   - error: 서비스 검색 중 발생한 오류
     public func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         guard let services = peripheral.services else { return }
         
@@ -430,6 +496,14 @@ extension BluetoothManager: CBPeripheralDelegate {
         }
     }
     
+    /// 서비스의 특성들이 발견되었을 때 호출됩니다.
+    ///
+    /// 센서 데이터 수신을 위해 필요한 특성들에 대해 알림을 활성화합니다.
+    ///
+    /// - Parameters:
+    ///   - peripheral: 특성이 발견된 페리페럴
+    ///   - service: 특성을 포함하는 서비스
+    ///   - error: 특성 검색 중 발생한 오류
     public func peripheral(_ peripheral: CBPeripheral,
                           didDiscoverCharacteristicsFor service: CBService,
                           error: Error?) {
@@ -443,6 +517,14 @@ extension BluetoothManager: CBPeripheralDelegate {
         }
     }
     
+    /// 특성의 값이 업데이트되었을 때 호출됩니다.
+    ///
+    /// 수신된 데이터를 센서 타입에 따라 파싱하고 델리게이트에 전달합니다.
+    ///
+    /// - Parameters:
+    ///   - peripheral: 값이 업데이트된 페리페럴
+    ///   - characteristic: 값이 업데이트된 특성
+    ///   - error: 값 읽기 중 발생한 오류
     public func peripheral(_ peripheral: CBPeripheral,
                           didUpdateValueFor characteristic: CBCharacteristic,
                           error: Error?) {

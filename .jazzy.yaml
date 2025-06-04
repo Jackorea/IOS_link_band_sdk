@@ -1,0 +1,6 @@
+module: BluetoothKit                  # 모듈명 정확히 일치시켜야 symbol 인식됨
+swift_build_tool: spm                # SwiftPM 프로젝트임을 명시
+output: docs/ios-jazzy               # Docusaurus용 경로로 명시
+min_acl: public                      # public만 문서화, internal/private 제외
+theme: apple                         # UI 스타일 선택
+exclude: Tests                       # 테스트 파일 무시

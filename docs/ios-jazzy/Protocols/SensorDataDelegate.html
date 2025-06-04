@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>SensorDataDelegate Protocol Reference</title>
+    <link rel="stylesheet" type="text/css" href="../css/jazzy.css" />
+    <link rel="stylesheet" type="text/css" href="../css/highlight.css" />
+    <meta charset='utf-8'>
+    <script src="../js/jquery.min.js" defer></script>
+    <script src="../js/jazzy.js" defer></script>
+    
+    <script src="../js/lunr.min.js" defer></script>
+    <script src="../js/typeahead.jquery.js" defer></script>
+    <script src="../js/jazzy.search.js" defer></script>
+  </head>
+  <body>
+    <a name="//apple_ref/swift/Protocol/SensorDataDelegate" class="dashAnchor"></a>
+    <a title="SensorDataDelegate Protocol Reference"></a>
+    <header>
+      <div class="content-wrapper">
+        <p><a href="../index.html">BluetoothKit Docs</a> (100% documented)</p>
+        <div class="header-right">
+          <form role="search" action="../search.json">
+            <input type="text" placeholder="Search documentation" data-typeahead>
+          </form>
+        </div>
+      </div>
+    </header>
+    <div class="content-wrapper">
+      <p id="breadcrumbs">
+        <a href="../index.html">BluetoothKit</a>
+        <img id="carat" src="../img/carat.png" alt=""/>
+        <a href="../Protocols.html">Protocols</a>
+        <img id="carat" src="../img/carat.png" alt=""/>
+        SensorDataDelegate Protocol Reference
+      </p>
+    </div>
+    <div class="content-wrapper">
+      <nav class="sidebar">
+        <ul class="nav-groups">
+          <li class="nav-group-name">
+            <a href="../Classes.html">Classes</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Classes/BluetoothKit.html">BluetoothKit</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BluetoothManager.html">BluetoothManager</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/DataRecorder.html">DataRecorder</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Enums.html">Enumerations</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Enums/BluetoothKitError.html">BluetoothKitError</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/ConnectionState.html">ConnectionState</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/LogLevel.html">LogLevel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/RecordingState.html">RecordingState</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Protocols.html">Protocols</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Protocols/BluetoothKitLogger.html">BluetoothKitLogger</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/BluetoothManagerDelegate.html">BluetoothManagerDelegate</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/DataRecorderDelegate.html">DataRecorderDelegate</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/SensorDataDelegate.html">SensorDataDelegate</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Structs.html">Structures</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Structs/AccelerometerReading.html">AccelerometerReading</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/BatteryReading.html">BatteryReading</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/BluetoothDevice.html">BluetoothDevice</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/DefaultLogger.html">DefaultLogger</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/EEGReading.html">EEGReading</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PPGReading.html">PPGReading</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/SensorConfiguration.html">SensorConfiguration</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/SilentLogger.html">SilentLogger</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <article class="main-content">
+        <section>
+          <section class="section">
+            <h1>SensorDataDelegate</h1>
+              <div class="declaration">
+                <div class="language">
+                  
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">SensorDataDelegate</span> <span class="p">:</span> <span class="kt">AnyObject</span><span class="p">,</span> <span class="kt">Sendable</span></code></pre>
+
+                </div>
+              </div>
+            <p>센서 데이터 수신을 처리하는 델리게이트 프로토콜입니다.</p>
+
+<p>이 프로토콜을 구현하여 BluetoothKit에서 수신되는
+각종 센서 데이터에 대한 사용자 정의 처리 로직을 제공할 수 있습니다.
+실시간 데이터 처리나 커스텀 분석에 유용합니다.</p>
+<h2 id='예시' class='heading'>예시</h2>
+<pre class="highlight swift"><code><span class="kd">class</span> <span class="kt">DataProcessor</span><span class="p">:</span> <span class="kt">SensorDataDelegate</span> <span class="p">{</span>
+    <span class="kd">func</span> <span class="nf">didReceiveEEGData</span><span class="p">(</span><span class="n">_</span> <span class="nv">reading</span><span class="p">:</span> <span class="kt">EEGReading</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// EEG 데이터 처리 로직</span>
+        <span class="nf">processEEGSignal</span><span class="p">(</span><span class="n">reading</span><span class="o">.</span><span class="n">channel1</span><span class="p">,</span> <span class="n">reading</span><span class="o">.</span><span class="n">channel2</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="kd">func</span> <span class="nf">didReceivePPGData</span><span class="p">(</span><span class="n">_</span> <span class="nv">reading</span><span class="p">:</span> <span class="kt">PPGReading</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// PPG 데이터로부터 심박수 계산</span>
+        <span class="nf">calculateHeartRate</span><span class="p">(</span><span class="nv">red</span><span class="p">:</span> <span class="n">reading</span><span class="o">.</span><span class="n">red</span><span class="p">,</span> <span class="nv">ir</span><span class="p">:</span> <span class="n">reading</span><span class="o">.</span><span class="n">ir</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre>
+
+          </section>
+          <section class="section task-group-section">
+            <div class="task-group">
+              <ul>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12BluetoothKit18SensorDataDelegateP17didReceiveEEGDatayyAA10EEGReadingVF"></a>
+                    <a name="//apple_ref/swift/Method/didReceiveEEGData(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12BluetoothKit18SensorDataDelegateP17didReceiveEEGDatayyAA10EEGReadingVF">didReceiveEEGData(_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>EEG 데이터가 수신되었을 때 호출됩니다.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">didReceiveEEGData</span><span class="p">(</span><span class="n">_</span> <span class="nv">reading</span><span class="p">:</span> <span class="kt"><a href="../Structs/EEGReading.html">EEGReading</a></span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>reading</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>수신된 EEG 읽기값</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12BluetoothKit18SensorDataDelegateP17didReceivePPGDatayyAA10PPGReadingVF"></a>
+                    <a name="//apple_ref/swift/Method/didReceivePPGData(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12BluetoothKit18SensorDataDelegateP17didReceivePPGDatayyAA10PPGReadingVF">didReceivePPGData(_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>PPG 데이터가 수신되었을 때 호출됩니다.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">didReceivePPGData</span><span class="p">(</span><span class="n">_</span> <span class="nv">reading</span><span class="p">:</span> <span class="kt"><a href="../Structs/PPGReading.html">PPGReading</a></span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>reading</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>수신된 PPG 읽기값</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12BluetoothKit18SensorDataDelegateP023didReceiveAccelerometerD0yyAA0H7ReadingVF"></a>
+                    <a name="//apple_ref/swift/Method/didReceiveAccelerometerData(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12BluetoothKit18SensorDataDelegateP023didReceiveAccelerometerD0yyAA0H7ReadingVF">didReceiveAccelerometerData(_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>가속도계 데이터가 수신되었을 때 호출됩니다.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">didReceiveAccelerometerData</span><span class="p">(</span><span class="n">_</span> <span class="nv">reading</span><span class="p">:</span> <span class="kt"><a href="../Structs/AccelerometerReading.html">AccelerometerReading</a></span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>reading</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>수신된 가속도계 읽기값</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12BluetoothKit18SensorDataDelegateP017didReceiveBatteryD0yyAA0H7ReadingVF"></a>
+                    <a name="//apple_ref/swift/Method/didReceiveBatteryData(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12BluetoothKit18SensorDataDelegateP017didReceiveBatteryD0yyAA0H7ReadingVF">didReceiveBatteryData(_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>배터리 데이터가 수신되었을 때 호출됩니다.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">didReceiveBatteryData</span><span class="p">(</span><span class="n">_</span> <span class="nv">reading</span><span class="p">:</span> <span class="kt"><a href="../Structs/BatteryReading.html">BatteryReading</a></span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>reading</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>수신된 배터리 읽기값</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </section>
+        </section>
+        <section id="footer">
+          <p>&copy; 2025 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2025-06-04)</p>
+          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
+        </section>
+      </article>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>ConnectionState Enumeration Reference</title>
+    <link rel="stylesheet" type="text/css" href="../css/jazzy.css" />
+    <link rel="stylesheet" type="text/css" href="../css/highlight.css" />
+    <meta charset='utf-8'>
+    <script src="../js/jquery.min.js" defer></script>
+    <script src="../js/jazzy.js" defer></script>
+    
+    <script src="../js/lunr.min.js" defer></script>
+    <script src="../js/typeahead.jquery.js" defer></script>
+    <script src="../js/jazzy.search.js" defer></script>
+  </head>
+  <body>
+    <a name="//apple_ref/swift/Enum/ConnectionState" class="dashAnchor"></a>
+    <a title="ConnectionState Enumeration Reference"></a>
+    <header>
+      <div class="content-wrapper">
+        <p><a href="../index.html">BluetoothKit Docs</a> (100% documented)</p>
+        <div class="header-right">
+          <form role="search" action="../search.json">
+            <input type="text" placeholder="Search documentation" data-typeahead>
+          </form>
+        </div>
+      </div>
+    </header>
+    <div class="content-wrapper">
+      <p id="breadcrumbs">
+        <a href="../index.html">BluetoothKit</a>
+        <img id="carat" src="../img/carat.png" alt=""/>
+        <a href="../Enums.html">Enumerations</a>
+        <img id="carat" src="../img/carat.png" alt=""/>
+        ConnectionState Enumeration Reference
+      </p>
+    </div>
+    <div class="content-wrapper">
+      <nav class="sidebar">
+        <ul class="nav-groups">
+          <li class="nav-group-name">
+            <a href="../Classes.html">Classes</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Classes/BluetoothKit.html">BluetoothKit</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/BluetoothManager.html">BluetoothManager</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/DataRecorder.html">DataRecorder</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Enums.html">Enumerations</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Enums/BluetoothKitError.html">BluetoothKitError</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/ConnectionState.html">ConnectionState</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/LogLevel.html">LogLevel</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/RecordingState.html">RecordingState</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Protocols.html">Protocols</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Protocols/BluetoothKitLogger.html">BluetoothKitLogger</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/BluetoothManagerDelegate.html">BluetoothManagerDelegate</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/DataRecorderDelegate.html">DataRecorderDelegate</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/SensorDataDelegate.html">SensorDataDelegate</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Structs.html">Structures</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Structs/AccelerometerReading.html">AccelerometerReading</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/BatteryReading.html">BatteryReading</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/BluetoothDevice.html">BluetoothDevice</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/DefaultLogger.html">DefaultLogger</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/EEGReading.html">EEGReading</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PPGReading.html">PPGReading</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/SensorConfiguration.html">SensorConfiguration</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/SilentLogger.html">SilentLogger</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <article class="main-content">
+        <section>
+          <section class="section">
+            <h1>ConnectionState</h1>
+              <div class="declaration">
+                <div class="language">
+                  
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">ConnectionState</span> <span class="p">:</span> <span class="kt">Sendable</span><span class="p">,</span> <span class="kt">Equatable</span></code></pre>
+
+                </div>
+              </div>
+            <p>Bluetooth 연결의 현재 상태를 나타내는 열거형입니다.</p>
+
+<p>이 열거형은 BluetoothKit의 연결 상태를 추적하고
+사용자 인터페이스에 적절한 피드백을 제공하는 데 사용됩니다.
+각 상태는 관련된 값(디바이스 이름, 오류 등)을 포함할 수 있습니다.</p>
+<h2 id='예시' class='heading'>예시</h2>
+<pre class="highlight swift"><code><span class="k">switch</span> <span class="n">connectionState</span> <span class="p">{</span>
+<span class="k">case</span> <span class="o">.</span><span class="nf">connected</span><span class="p">(</span><span class="k">let</span> <span class="nv">deviceName</span><span class="p">):</span>
+    <span class="nf">print</span><span class="p">(</span><span class="s">"</span><span class="se">\(</span><span class="n">deviceName</span><span class="se">)</span><span class="s">에 연결됨"</span><span class="p">)</span>
+<span class="k">case</span> <span class="o">.</span><span class="nf">failed</span><span class="p">(</span><span class="k">let</span> <span class="nv">error</span><span class="p">):</span>
+    <span class="nf">print</span><span class="p">(</span><span class="s">"연결 실패: </span><span class="se">\(</span><span class="n">error</span><span class="o">.</span><span class="n">localizedDescription</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+<span class="k">default</span><span class="p">:</span>
+    <span class="nf">print</span><span class="p">(</span><span class="s">"기타 상태: </span><span class="se">\(</span><span class="n">connectionState</span><span class="o">.</span><span class="n">description</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre>
+
+          </section>
+          <section class="section task-group-section">
+            <div class="task-group">
+              <ul>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12BluetoothKit15ConnectionStateO12disconnectedyA2CmF"></a>
+                    <a name="//apple_ref/swift/Element/disconnected" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12BluetoothKit15ConnectionStateO12disconnectedyA2CmF">disconnected</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>어떤 디바이스에도 연결되지 않은 상태입니다.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">disconnected</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12BluetoothKit15ConnectionStateO8scanningyA2CmF"></a>
+                    <a name="//apple_ref/swift/Element/scanning" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12BluetoothKit15ConnectionStateO8scanningyA2CmF">scanning</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>현재 디바이스를 스캔하고 있는 상태입니다.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">scanning</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12BluetoothKit15ConnectionStateO10connectingyACSScACmF"></a>
+                    <a name="//apple_ref/swift/Element/connecting(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12BluetoothKit15ConnectionStateO10connectingyACSScACmF">connecting(_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>특정 디바이스에 연결을 시도하고 있는 상태입니다.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="nf">connecting</span><span class="p">(</span><span class="kt">String</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>deviceName</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>연결을 시도하는 디바이스의 이름</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12BluetoothKit15ConnectionStateO9connectedyACSScACmF"></a>
+                    <a name="//apple_ref/swift/Element/connected(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12BluetoothKit15ConnectionStateO9connectedyACSScACmF">connected(_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>특정 디바이스에 성공적으로 연결된 상태입니다.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="nf">connected</span><span class="p">(</span><span class="kt">String</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>deviceName</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>연결된 디바이스의 이름</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12BluetoothKit15ConnectionStateO12reconnectingyACSScACmF"></a>
+                    <a name="//apple_ref/swift/Element/reconnecting(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12BluetoothKit15ConnectionStateO12reconnectingyACSScACmF">reconnecting(_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>연결이 끊어진 후 자동으로 재연결을 시도하고 있는 상태입니다.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="nf">reconnecting</span><span class="p">(</span><span class="kt">String</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>deviceName</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>재연결을 시도하는 디바이스의 이름</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12BluetoothKit15ConnectionStateO6failedyAcA0aB5ErrorOcACmF"></a>
+                    <a name="//apple_ref/swift/Element/failed(_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12BluetoothKit15ConnectionStateO6failedyAcA0aB5ErrorOcACmF">failed(_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>연결 또는 작업이 실패한 상태입니다.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="nf">failed</span><span class="p">(</span><span class="kt"><a href="../Enums/BluetoothKitError.html">BluetoothKitError</a></span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>error</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>실패 원인을 나타내는 오류</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:12BluetoothKit15ConnectionStateO11descriptionSSvp"></a>
+                    <a name="//apple_ref/swift/Property/description" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12BluetoothKit15ConnectionStateO11descriptionSSvp">description</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>연결 상태의 사용자 친화적인 한국어 설명입니다.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">description</span><span class="p">:</span> <span class="kt">String</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:SQ2eeoiySbx_xtFZ"></a>
+                    <a name="//apple_ref/swift/Method/==(_:_:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:SQ2eeoiySbx_xtFZ">==(_:<wbr>_:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="o">==</span> <span class="p">(</span><span class="nv">lhs</span><span class="p">:</span> <span class="kt">ConnectionState</span><span class="p">,</span> <span class="nv">rhs</span><span class="p">:</span> <span class="kt">ConnectionState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Bool</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </section>
+        </section>
+        <section id="footer">
+          <p>&copy; 2025 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2025-06-04)</p>
+          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
+        </section>
+      </article>
+    </div>
+  </body>
+</html>
