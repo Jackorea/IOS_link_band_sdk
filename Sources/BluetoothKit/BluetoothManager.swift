@@ -3,12 +3,11 @@ import CoreBluetooth
 
 // MARK: - Bluetooth Manager
 
-/// Bluetooth Low Energy 연결 및 디바이스 검색을 관리하는 내부 클래스입니다.
+/// Core Bluetooth를 사용한 디바이스 연결 및 데이터 통신을 관리하는 클래스입니다.
 ///
-/// 이 클래스는 CoreBluetooth 스택을 처리하고 디바이스 스캔, 연결 관리, 
-/// 데이터 스트리밍을 위한 깔끔한 인터페이스를 제공합니다. 
-/// 디스패치 큐를 사용하여 적절한 동시성 안전성을 구현합니다.
-public class BluetoothManager: NSObject, @unchecked Sendable {
+/// 이 클래스는 Bluetooth LE 디바이스의 스캔, 연결, 서비스 및 특성 탐지,
+/// 데이터 읽기/쓰기 기능을 제공합니다. BluetoothKit의 내부 구현체로 사용됩니다.
+internal class BluetoothManager: NSObject, @unchecked Sendable {
     
     // MARK: - Properties
     

@@ -2,11 +2,11 @@ import Foundation
 
 // MARK: - Data Recorder
 
-/// 센서 데이터를 파일로 기록하는 역할을 담당하는 클래스입니다.
+/// 센서 데이터를 CSV 파일로 기록하고 관리하는 클래스입니다.
 ///
-/// EEG, PPG, 가속도계, 배터리 데이터를 CSV 및 JSON 형식으로 기록하는 기능을 제공하며,
-/// 적절한 동시성 안전성을 보장합니다.
-public class DataRecorder: @unchecked Sendable {
+/// 이 클래스는 실시간으로 수신되는 센서 데이터를 백그라운드에서 
+/// 효율적으로 CSV 파일에 저장합니다. BluetoothKit의 내부 구현체로 사용됩니다.
+internal class DataRecorder: @unchecked Sendable {
     
     // MARK: - Properties
     

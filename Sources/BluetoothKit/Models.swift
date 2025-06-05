@@ -27,7 +27,8 @@ public struct BluetoothDevice: Identifiable, Equatable, @unchecked Sendable {
     ///
     /// 실제 BLE 통신을 위해 사용되는 CBPeripheral 인스턴스입니다.
     /// 연결, 서비스 검색, 특성 읽기/쓰기 등의 작업에 사용됩니다.
-    public let peripheral: CBPeripheral
+    /// SDK 내부에서만 접근 가능합니다.
+    internal let peripheral: CBPeripheral
     
     /// 디바이스의 표시 이름입니다.
     ///
@@ -45,10 +46,10 @@ public struct BluetoothDevice: Identifiable, Equatable, @unchecked Sendable {
     /// 새로운 BluetoothDevice 인스턴스를 생성합니다.
     ///
     /// - Parameters:
-    ///   - peripheral: Core Bluetooth 페리페럴 객체
-    ///   - name: 디바이스 표시 이름
-    ///   - rssi: 신호 강도 (dBm, 선택사항)
-    public init(peripheral: CBPeripheral, name: String, rssi: NSNumber? = nil) {
+    ///   - peripheral: Core Bluetooth peripheral
+    ///   - name: 디바이스 이름
+    ///   - rssi: 신호 강도 (선택사항)
+    internal init(peripheral: CBPeripheral, name: String, rssi: NSNumber? = nil) {
         self.peripheral = peripheral
         self.name = name
         self.rssi = rssi
@@ -121,7 +122,7 @@ public struct EEGReading: Sendable {
     ///   - ch2Raw: 채널 2 원시 ADC 값
     ///   - leadOff: 전극 연결 해제 상태
     ///   - timestamp: 측정 시간 (기본값: 현재 시간)
-    public init(channel1: Double, channel2: Double, ch1Raw: Int32, ch2Raw: Int32, leadOff: Bool, timestamp: Date = Date()) {
+    internal init(channel1: Double, channel2: Double, ch1Raw: Int32, ch2Raw: Int32, leadOff: Bool, timestamp: Date = Date()) {
         self.channel1 = channel1
         self.channel2 = channel2
         self.ch1Raw = ch1Raw
@@ -167,7 +168,7 @@ public struct PPGReading: Sendable {
     ///   - red: 적색 LED 측정값
     ///   - ir: 적외선 LED 측정값
     ///   - timestamp: 측정 시간 (기본값: 현재 시간)
-    public init(red: Int, ir: Int, timestamp: Date = Date()) {
+    internal init(red: Int, ir: Int, timestamp: Date = Date()) {
         self.red = red
         self.ir = ir
         self.timestamp = timestamp
@@ -214,11 +215,11 @@ public struct AccelerometerReading: Sendable {
     /// 새로운 AccelerometerReading 인스턴스를 생성합니다.
     ///
     /// - Parameters:
-    ///   - x: X축 가속도 값
-    ///   - y: Y축 가속도 값
-    ///   - z: Z축 가속도 값
+    ///   - x: X축 가속도값
+    ///   - y: Y축 가속도값
+    ///   - z: Z축 가속도값
     ///   - timestamp: 측정 시간 (기본값: 현재 시간)
-    public init(x: Int16, y: Int16, z: Int16, timestamp: Date = Date()) {
+    internal init(x: Int16, y: Int16, z: Int16, timestamp: Date = Date()) {
         self.x = x
         self.y = y
         self.z = z
@@ -251,9 +252,9 @@ public struct BatteryReading: Sendable {
     /// 새로운 BatteryReading 인스턴스를 생성합니다.
     ///
     /// - Parameters:
-    ///   - level: 배터리 잔량 백분율 (0-100)
+    ///   - level: 배터리 잔량 (0-100%)
     ///   - timestamp: 측정 시간 (기본값: 현재 시간)
-    public init(level: UInt8, timestamp: Date = Date()) {
+    internal init(level: UInt8, timestamp: Date = Date()) {
         self.level = level
         self.timestamp = timestamp
     }
@@ -263,21 +264,27 @@ public struct BatteryReading: Sendable {
 
 /// Bluetooth 연결의 현재 상태를 나타내는 열거형입니다.
 ///
-/// 이 열거형은 BluetoothKit의 연결 상태를 추적하고
-/// 사용자 인터페이스에 적절한 피드백을 제공하는 데 사용됩니다.
-/// 각 상태는 관련된 값(디바이스 이름, 오류 등)을 포함할 수 있습니다.
+/// 이 열거형은 연결 프로세스의 다양한 단계를 추적하며,
+/// 사용자 인터페이스에서 적절한 상태 표시를 제공합니다.
+/// 
+/// **⚠️ 중요: 이 상태들은 SDK에서 자동으로 관리됩니다.**
+/// **사용자가 직접 생성하지 마세요. 읽기 전용으로만 사용하세요.**
 ///
-/// ## 예시
+/// ## 사용 예시
 ///
 /// ```swift
-/// switch connectionState {
+/// // ✅ 올바른 사용법 - 상태 읽기
+/// switch bluetoothKit.connectionState {
+/// case .disconnected:
+///     showDisconnectedUI()
 /// case .connected(let deviceName):
-///     print("\(deviceName)에 연결됨")
-/// case .failed(let error):
-///     print("연결 실패: \(error.localizedDescription)")
+///     showConnectedUI(for: deviceName)
 /// default:
-///     print("기타 상태: \(connectionState.description)")
+///     break
 /// }
+/// 
+/// // ❌ 잘못된 사용법 - 직접 생성하지 마세요
+/// // bluetoothKit.connectionState = .connected("FakeDevice")
 /// ```
 public enum ConnectionState: Sendable, Equatable {
     /// 어떤 디바이스에도 연결되지 않은 상태입니다.
@@ -350,6 +357,21 @@ public enum ConnectionState: Sendable, Equatable {
 /// 이 열거형은 센서 데이터의 파일 기록 상태를 추적합니다.
 /// 기록 시작, 진행 중, 종료 등의 상태를 구분하여
 /// 사용자 인터페이스와 내부 로직에서 활용됩니다.
+///
+/// **⚠️ 중요: 이 상태들은 SDK에서 자동으로 관리됩니다.**
+/// **사용자가 직접 생성하지 마세요. 읽기 전용으로만 사용하세요.**
+///
+/// ## 사용 예시
+///
+/// ```swift
+/// // ✅ 올바른 사용법 - 상태 확인
+/// if bluetoothKit.isRecording {
+///     showRecordingIndicator()
+/// }
+/// 
+/// // ❌ 잘못된 사용법 - 직접 상태 생성하지 마세요
+/// // let fakeState = RecordingState.recording
+/// ```
 public enum RecordingState: Sendable {
     /// 기록이 비활성화된 유휴 상태입니다.
     case idle
@@ -368,49 +390,47 @@ public enum RecordingState: Sendable {
 
 // MARK: - Configuration
 
-/// 센서 데이터 수집 및 디바이스 통신을 위한 구성 설정입니다.
+/// 센서 데이터 수집을 위한 기본 구성 설정입니다.
 ///
 /// 이 구조체를 사용하여 BluetoothKit의 기본 동작을 사용자 정의할 수 있습니다.
+/// 대부분의 경우 기본 설정으로 충분하며, 필요에 따라 디바이스 이름 필터나
+/// 자동 재연결 설정만 변경하면 됩니다.
 ///
 /// ## 예시
 ///
 /// ```swift
-/// // 기본 설정
-/// let defaultConfig = SensorConfiguration.default
+/// // 기본 설정 사용
+/// let bluetoothKit = BluetoothKit()
 ///
-/// // 사용자 정의 샘플링 레이트
-/// let customConfig = SensorConfiguration(
-///     eegSampleRate: 500.0,
-///     ppgSampleRate: 100.0,
-///     deviceNamePrefix: "MyDevice-"
-/// )
+/// // 커스텀 디바이스 이름 필터
+/// let config = SensorConfiguration(deviceNamePrefix: "MyDevice-")
+/// let bluetoothKit = BluetoothKit(configuration: config)
 /// ```
 public struct SensorConfiguration: Sendable {
-    
-    /// EEG 샘플링 레이트 (Hz).
-    ///
-    /// 일반적인 값: 125Hz, 250Hz, 500Hz, 1000Hz
-    public let eegSampleRate: Double
-    
-    /// PPG 샘플링 레이트 (Hz).
-    ///
-    /// 일반적인 값: 25Hz, 50Hz, 100Hz
-    public let ppgSampleRate: Double
-    
-    /// 가속도계 샘플링 레이트 (Hz).
-    ///
-    /// 일반적인 값: 10Hz, 30Hz, 50Hz, 100Hz
-    public let accelerometerSampleRate: Double
     
     /// 검색 가능한 디바이스를 필터링하기 위한 접두사.
     ///
     /// 이 접두사로 시작하는 이름을 가진 디바이스만 스캔 중에 검색됩니다.
+    /// 기본값: "LXB-"
     public let deviceNamePrefix: String
     
     /// 연결이 끊어졌을 때 자동으로 재연결할지 여부.
+    ///
+    /// 기본값: true
     public let autoReconnectEnabled: Bool
     
-    // MARK: - Internal hardware parameters (fixed values)
+    // MARK: - Internal Configuration (Fixed Values)
+    
+    /// EEG 샘플링 레이트 (Hz) - 고정값
+    internal let eegSampleRate: Double = 250.0
+    
+    /// PPG 샘플링 레이트 (Hz) - 고정값
+    internal let ppgSampleRate: Double = 50.0
+    
+    /// 가속도계 샘플링 레이트 (Hz) - 고정값
+    internal let accelerometerSampleRate: Double = 30.0
+    
+    // MARK: - Internal hardware parameters (Fixed Values)
     
     internal let eegVoltageReference: Double = 4.033
     internal let eegGain: Double = 12.0
@@ -430,41 +450,18 @@ public struct SensorConfiguration: Sendable {
     /// 새로운 센서 설정을 생성합니다.
     ///
     /// - Parameters:
-    ///   - eegSampleRate: EEG 샘플링 레이트 (Hz). 기본값: 250.0
-    ///   - ppgSampleRate: PPG 샘플링 레이트 (Hz). 기본값: 50.0
-    ///   - accelerometerSampleRate: 가속도계 샘플링 레이트 (Hz). 기본값: 30.0
     ///   - deviceNamePrefix: 디바이스 이름 필터 접두사. 기본값: "LXB-"
     ///   - autoReconnectEnabled: 자동 재연결 활성화. 기본값: true
     public init(
-        eegSampleRate: Double = 250.0,
-        ppgSampleRate: Double = 50.0,
-        accelerometerSampleRate: Double = 30.0,
         deviceNamePrefix: String = "LXB-",
         autoReconnectEnabled: Bool = true
     ) {
-        self.eegSampleRate = eegSampleRate
-        self.ppgSampleRate = ppgSampleRate
-        self.accelerometerSampleRate = accelerometerSampleRate
         self.deviceNamePrefix = deviceNamePrefix
         self.autoReconnectEnabled = autoReconnectEnabled
     }
     
-    /// 일반적인 생체의학 데이터 수집을 위한 기본 설정.
+    /// 일반적인 사용을 위한 기본 설정.
     public static let `default` = SensorConfiguration()
-    
-    /// 연구 애플리케이션을 위한 고성능 설정.
-    public static let highPerformance = SensorConfiguration(
-        eegSampleRate: 500.0,
-        ppgSampleRate: 100.0,
-        accelerometerSampleRate: 100.0
-    )
-    
-    /// 장시간 모니터링을 위한 저전력 설정.
-    public static let lowPower = SensorConfiguration(
-        eegSampleRate: 125.0,
-        ppgSampleRate: 25.0,
-        accelerometerSampleRate: 10.0
-    )
 }
 
 // MARK: - Sensor UUIDs (Internal)
@@ -692,7 +689,7 @@ private extension DateFormatter {
 ///     }
 /// }
 /// ```
-public protocol SensorDataDelegate: AnyObject, Sendable {
+internal protocol SensorDataDelegate: AnyObject, Sendable {
     /// EEG 데이터가 수신되었을 때 호출됩니다.
     ///
     /// - Parameter reading: 수신된 EEG 읽기값
@@ -735,7 +732,7 @@ public protocol SensorDataDelegate: AnyObject, Sendable {
 ///     }
 /// }
 /// ```
-public protocol BluetoothManagerDelegate: AnyObject, Sendable {
+internal protocol BluetoothManagerDelegate: AnyObject, Sendable {
     /// Bluetooth 연결 상태가 변경되었을 때 호출됩니다.
     ///
     /// - Parameters:
@@ -785,7 +782,7 @@ public protocol BluetoothManagerDelegate: AnyObject, Sendable {
 ///     }
 /// }
 /// ```
-public protocol DataRecorderDelegate: AnyObject, Sendable {
+internal protocol DataRecorderDelegate: AnyObject, Sendable {
     /// 데이터 기록이 시작되었을 때 호출됩니다.
     ///
     /// - Parameters:
@@ -817,12 +814,15 @@ public protocol DataRecorderDelegate: AnyObject, Sendable {
 /// 사용자에게 적절한 오류 메시지를 제공하는 데 사용됩니다.
 /// 모든 오류는 현지화된 설명을 제공합니다.
 ///
-/// ## 예시
+/// **⚠️ 중요: 이 오류들은 SDK에서 자동으로 생성됩니다.**
+/// **사용자가 직접 생성하지 마세요. catch 블록에서만 처리하세요.**
+///
+/// ## 사용 예시
 ///
 /// ```swift
-/// do {
-///     try await connectToDevice()
-/// } catch let error as BluetoothKitError {
+/// // ✅ 올바른 사용법 - 오류 처리
+/// switch bluetoothKit.connectionState {
+/// case .failed(let error):
 ///     switch error {
 ///     case .bluetoothUnavailable:
 ///         showBluetoothOffAlert()
@@ -831,7 +831,12 @@ public protocol DataRecorderDelegate: AnyObject, Sendable {
 ///     default:
 ///         showGenericError(error.localizedDescription)
 ///     }
+/// default:
+///     break
 /// }
+/// 
+/// // ❌ 잘못된 사용법 - 직접 오류 생성하지 마세요
+/// // let fakeError = BluetoothKitError.connectionFailed("fake")
 /// ```
 public enum BluetoothKitError: LocalizedError, Sendable, Equatable {
     /// Bluetooth가 비활성화되어 있거나 사용할 수 없는 상태입니다.

@@ -279,9 +279,6 @@ typedef unsigned int swift_uint4  __attribute__((__ext_vector_type__(4)));
 #if __has_warning("-Watimport-in-framework-header")
 #pragma clang diagnostic ignored "-Watimport-in-framework-header"
 #endif
-@import CoreBluetooth;
-@import Foundation;
-@import ObjectiveC;
 #endif
 
 #endif
@@ -303,97 +300,6 @@ typedef unsigned int swift_uint4  __attribute__((__ext_vector_type__(4)));
 #endif
 
 #if defined(__OBJC__)
-
-/// Bluetooth Low Energy 연결 및 디바이스 검색을 관리하는 내부 클래스입니다.
-/// 이 클래스는 CoreBluetooth 스택을 처리하고 디바이스 스캔, 연결 관리,
-/// 데이터 스트리밍을 위한 깔끔한 인터페이스를 제공합니다.
-/// 디스패치 큐를 사용하여 적절한 동시성 안전성을 구현합니다.
-SWIFT_CLASS("_TtC12BluetoothKit16BluetoothManager")
-@interface BluetoothManager : NSObject
-- (nonnull instancetype)init SWIFT_UNAVAILABLE;
-+ (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
-@end
-
-@class CBPeripheral;
-@class CBService;
-@class CBCharacteristic;
-@interface BluetoothManager (SWIFT_EXTENSION(BluetoothKit)) <CBPeripheralDelegate>
-/// 페리페럴의 서비스가 발견되었을 때 호출됩니다.
-/// 발견된 각 서비스에 대해 특성(Characteristics) 검색을 시작합니다.
-/// \param peripheral 서비스가 발견된 페리페럴
-///
-/// \param error 서비스 검색 중 발생한 오류
-///
-- (void)peripheral:(CBPeripheral * _Nonnull)peripheral didDiscoverServices:(NSError * _Nullable)error;
-/// 서비스의 특성들이 발견되었을 때 호출됩니다.
-/// 센서 데이터 수신을 위해 필요한 특성들에 대해 알림을 활성화합니다.
-/// \param peripheral 특성이 발견된 페리페럴
-///
-/// \param service 특성을 포함하는 서비스
-///
-/// \param error 특성 검색 중 발생한 오류
-///
-- (void)peripheral:(CBPeripheral * _Nonnull)peripheral didDiscoverCharacteristicsForService:(CBService * _Nonnull)service error:(NSError * _Nullable)error;
-/// 특성의 값이 업데이트되었을 때 호출됩니다.
-/// 수신된 데이터를 센서 타입에 따라 파싱하고 델리게이트에 전달합니다.
-/// \param peripheral 값이 업데이트된 페리페럴
-///
-/// \param characteristic 값이 업데이트된 특성
-///
-/// \param error 값 읽기 중 발생한 오류
-///
-- (void)peripheral:(CBPeripheral * _Nonnull)peripheral didUpdateValueForCharacteristic:(CBCharacteristic * _Nonnull)characteristic error:(NSError * _Nullable)error;
-@end
-
-@class CBCentralManager;
-@class NSString;
-@class NSNumber;
-@interface BluetoothManager (SWIFT_EXTENSION(BluetoothKit)) <CBCentralManagerDelegate>
-/// Central Manager의 상태가 변경되었을 때 호출됩니다.
-/// Bluetooth가 켜지거나 꺼지는 등의 상태 변화를 처리하며,
-/// 연결 상태를 적절히 업데이트합니다.
-/// \param central 상태가 변경된 Central Manager
-///
-- (void)centralManagerDidUpdateState:(CBCentralManager * _Nonnull)central;
-/// 새로운 BLE 디바이스가 발견되었을 때 호출됩니다.
-/// 설정된 디바이스 이름 필터에 맞는 디바이스를 찾아
-/// 발견된 디바이스 목록에 추가합니다.
-/// \param central 디바이스를 발견한 Central Manager
-///
-/// \param peripheral 발견된 BLE 페리페럴
-///
-/// \param advertisementData 광고 데이터
-///
-/// \param RSSI 신호 강도 (dBm)
-///
-- (void)centralManager:(CBCentralManager * _Nonnull)central didDiscoverPeripheral:(CBPeripheral * _Nonnull)peripheral advertisementData:(NSDictionary<NSString *, id> * _Nonnull)advertisementData RSSI:(NSNumber * _Nonnull)RSSI;
-/// 디바이스에 성공적으로 연결되었을 때 호출됩니다.
-/// 연결 후 서비스 검색을 시작하고 연결 상태를 업데이트합니다.
-/// \param central 연결을 수행한 Central Manager
-///
-/// \param peripheral 연결된 페리페럴
-///
-- (void)centralManager:(CBCentralManager * _Nonnull)central didConnectPeripheral:(CBPeripheral * _Nonnull)peripheral;
-/// 디바이스 연결에 실패했을 때 호출됩니다.
-/// 연결 실패 원인을 로그에 기록하고 연결 상태를 실패로 업데이트합니다.
-/// \param central 연결을 시도한 Central Manager
-///
-/// \param peripheral 연결에 실패한 페리페럴
-///
-/// \param error 연결 실패 원인
-///
-- (void)centralManager:(CBCentralManager * _Nonnull)central didFailToConnectPeripheral:(CBPeripheral * _Nonnull)peripheral error:(NSError * _Nullable)error;
-/// 디바이스와의 연결이 해제되었을 때 호출됩니다.
-/// 자동 재연결이 활성화된 경우 재연결을 시도하고,
-/// 그렇지 않으면 연결 상태를 해제됨으로 업데이트합니다.
-/// \param central 연결 해제를 감지한 Central Manager
-///
-/// \param peripheral 연결이 해제된 페리페럴
-///
-/// \param error 연결 해제 원인 (자발적 해제인 경우 nil)
-///
-- (void)centralManager:(CBCentralManager * _Nonnull)central didDisconnectPeripheral:(CBPeripheral * _Nonnull)peripheral error:(NSError * _Nullable)error;
-@end
 
 #endif
 #if __has_attribute(external_source_symbol)
