@@ -385,38 +385,18 @@ public enum RecordingState: Sendable {
     }
 }
 
-// MARK: - Configuration
+// MARK: - Sensor Configuration (Internal)
 
-/// 센서 데이터 수집을 위한 기본 구성 설정입니다.
+/// 센서의 내부 설정을 관리하는 구조체입니다.
 ///
-/// 이 구조체를 사용하여 BluetoothKit의 기본 동작을 사용자 정의할 수 있습니다.
-/// 대부분의 경우 기본 설정으로 충분하며, 필요에 따라 디바이스 이름 필터나
-/// 자동 재연결 설정만 변경하면 됩니다.
-///
-/// ## 예시
-///
-/// ```swift
-/// // 기본 설정 사용
-/// let bluetoothKit = BluetoothKit()
-///
-/// // 커스텀 디바이스 이름 필터
-/// let config = SensorConfiguration(deviceNamePrefix: "MyDevice-")
-/// let bluetoothKit = BluetoothKit(configuration: config)
-/// ```
-public struct SensorConfiguration: Sendable {
+/// LXB- 디바이스에 특화되어 있으며, 모든 설정값이 고정되어 있습니다.
+/// 사용자가 직접 수정할 필요가 없는 내부 하드웨어 파라미터들을 포함합니다.
+internal struct SensorConfiguration: Sendable {
     
-    /// 검색 가능한 디바이스를 필터링하기 위한 접두사.
-    ///
-    /// 이 접두사로 시작하는 이름을 가진 디바이스만 스캔 중에 검색됩니다.
-    /// 기본값: "LXB-"
-    public let deviceNamePrefix: String
+    /// LXB- 디바이스 이름 접두사 (고정값)
+    internal let deviceNamePrefix: String = "LXB-"
     
-    /// 연결이 끊어졌을 때 자동으로 재연결할지 여부.
-    ///
-    /// 기본값: true
-    public let autoReconnectEnabled: Bool
-    
-    // MARK: - Internal Configuration (Fixed Values)
+    // MARK: - Sampling Rates (Fixed Values)
     
     /// EEG 샘플링 레이트 (Hz) - 고정값
     internal let eegSampleRate: Double = 250.0
@@ -427,7 +407,7 @@ public struct SensorConfiguration: Sendable {
     /// 가속도계 샘플링 레이트 (Hz) - 고정값
     internal let accelerometerSampleRate: Double = 30.0
     
-    // MARK: - Internal hardware parameters (Fixed Values)
+    // MARK: - Hardware Parameters (Fixed Values)
     
     internal let eegVoltageReference: Double = 4.033
     internal let eegGain: Double = 12.0
@@ -440,21 +420,13 @@ public struct SensorConfiguration: Sendable {
     internal let eegSampleSize: Int = 7
     internal let ppgSampleSize: Int = 6
     
-    /// 새로운 센서 설정을 생성합니다.
-    ///
-    /// - Parameters:
-    ///   - deviceNamePrefix: 디바이스 이름 필터 접두사. 기본값: "LXB-"
-    ///   - autoReconnectEnabled: 자동 재연결 활성화. 기본값: true
-    public init(
-        deviceNamePrefix: String = "LXB-",
-        autoReconnectEnabled: Bool = true
-    ) {
-        self.deviceNamePrefix = deviceNamePrefix
-        self.autoReconnectEnabled = autoReconnectEnabled
+    /// LXB- 디바이스용 기본 설정을 생성합니다.
+    internal init() {
+        // 모든 값이 고정 상수로 정의되어 있음
     }
     
     /// 일반적인 사용을 위한 기본 설정.
-    public static let `default` = SensorConfiguration()
+    internal static let `default` = SensorConfiguration()
 }
 
 // MARK: - Sensor UUIDs (Internal)

@@ -129,35 +129,37 @@ public class BluetoothKit: ObservableObject, @unchecked Sendable {
     // MARK: - Initialization
     
     /// 새로운 BluetoothKit 인스턴스를 생성합니다.
+    /// 
+    /// 이 생성자는 센서 데이터 수집을 위한 BluetoothKit을 초기화합니다.
+    /// 모든 설정이 기본값으로 설정되며, 바로 사용할 수 있는 상태가 됩니다.
     ///
-    /// - Parameters:
-    ///   - configuration: 센서 구성 설정 (선택사항). 기본값: .default
-    ///   - enableLogging: 로그 출력 활성화 여부 (선택사항). 기본값: true
+    /// ## 초기 설정값
+    /// - 로깅: 비활성화 (성능 최적화)
+    /// - 자동 재연결: 활성화
+    /// - 디바이스 필터: LXB- 접두사
     ///
-    /// ## 예시
-    ///
+    /// ## 사용법
     /// ```swift
-    /// // 기본 설정 (로그 활성화)
+    /// // 인스턴스 생성
     /// let bluetoothKit = BluetoothKit()
-    ///
-    /// // 커스텀 설정
-    /// let config = SensorConfiguration(deviceNamePrefix: "MyDevice-")
-    /// let bluetoothKit = BluetoothKit(configuration: config)
-    ///
-    /// // 로그 비활성화 (프로덕션용)
-    /// let bluetoothKit = BluetoothKit(enableLogging: false)
+    /// 
+    /// // 생성 후 필요한 설정 변경
+    /// bluetoothKit.setAutoReconnect(enabled: false)
     /// ```
-    public init(configuration: SensorConfiguration = .default, enableLogging: Bool = true) {
-        self.configuration = configuration
-        self.logger = InternalLogger(isEnabled: enableLogging)
+    public init() {
+        self.configuration = .default
+        self.logger = InternalLogger(isEnabled: false)  // 프로덕션 최적화
         self.bluetoothManager = BluetoothManager(configuration: configuration, logger: logger)
         self.dataRecorder = DataRecorder(logger: logger)
         
-        // 설정에서 auto-reconnect 설정 초기화
-        self.isAutoReconnectEnabled = configuration.autoReconnectEnabled
+        // 기본값: auto-reconnect 활성화 (대부분의 경우 유용함)
+        self.isAutoReconnectEnabled = true
         
         setupDelegates()
         updateRecordedFiles()
+        
+        // BluetoothManager에 초기 auto-reconnect 설정 전달
+        bluetoothManager.enableAutoReconnect(true)
     }
     
     // MARK: - Public Interface

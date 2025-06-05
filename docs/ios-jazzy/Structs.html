@@ -75,9 +75,6 @@
               <li class="nav-group-task">
                 <a href="Structs/PPGReading.html">PPGReading</a>
               </li>
-              <li class="nav-group-task">
-                <a href="Structs/SensorConfiguration.html">SensorConfiguration</a>
-              </li>
             </ul>
           </li>
         </ul>
@@ -301,59 +298,6 @@ X, Y, Z축의 가속도 데이터를 포함합니다. 값은 중력 단위(g)의
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BatteryReading</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
-
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-              </ul>
-            </div>
-            <div class="task-group">
-              <div class="task-name-container">
-                <a name="/Configuration"></a>
-                <a name="//apple_ref/swift/Section/Configuration" class="dashAnchor"></a>
-                <div class="section-name-container">
-                  <a class="section-name-link" href="#/Configuration"></a>
-                  <h3 class="section-name"><span>Configuration</span>
-</h3>
-                </div>
-              </div>
-              <ul>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:12BluetoothKit19SensorConfigurationV"></a>
-                    <a name="//apple_ref/swift/Struct/SensorConfiguration" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12BluetoothKit19SensorConfigurationV">SensorConfiguration</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>센서 데이터 수집을 위한 기본 구성 설정입니다.</p>
-
-<p>이 구조체를 사용하여 BluetoothKit의 기본 동작을 사용자 정의할 수 있습니다.
-대부분의 경우 기본 설정으로 충분하며, 필요에 따라 디바이스 이름 필터나
-자동 재연결 설정만 변경하면 됩니다.</p>
-<h2 id='예시' class='heading'>예시</h2>
-<pre class="highlight swift"><code><span class="c1">// 기본 설정 사용</span>
-<span class="k">let</span> <span class="nv">bluetoothKit</span> <span class="o">=</span> <span class="kt">BluetoothKit</span><span class="p">()</span>
-
-<span class="c1">// 커스텀 디바이스 이름 필터</span>
-<span class="k">let</span> <span class="nv">config</span> <span class="o">=</span> <span class="kt">SensorConfiguration</span><span class="p">(</span><span class="nv">deviceNamePrefix</span><span class="p">:</span> <span class="s">"MyDevice-"</span><span class="p">)</span>
-<span class="k">let</span> <span class="nv">bluetoothKit</span> <span class="o">=</span> <span class="kt">BluetoothKit</span><span class="p">(</span><span class="nv">configuration</span><span class="p">:</span> <span class="n">config</span><span class="p">)</span>
-</code></pre>
-
-                        <a href="Structs/SensorConfiguration.html" class="slightly-smaller">See more</a>
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">SensorConfiguration</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>

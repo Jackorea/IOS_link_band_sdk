@@ -41,13 +41,13 @@ internal class BluetoothManager: NSObject, @unchecked Sendable {
     /// 새로운 BluetoothManager 인스턴스를 생성합니다.
     ///
     /// - Parameters:
-    ///   - configuration: 센서 구성 설정
+    ///   - configuration: 센서 하드웨어 설정
     ///   - logger: 디버깅을 위한 로거 구현
     public init(configuration: SensorConfiguration, logger: InternalLogger) {
         self.configuration = configuration
         self.logger = logger
         self.dataParser = SensorDataParser(configuration: configuration)
-        self.isAutoReconnectEnabled = configuration.autoReconnectEnabled
+        self.isAutoReconnectEnabled = true  // 기본값, 외부에서 설정됨
         
         super.init()
         
