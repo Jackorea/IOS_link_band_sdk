@@ -17,7 +17,7 @@
     <a title="Enumerations  Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="index.html">BluetoothKit Docs</a> (100% documented)</p>
+        <p><a href="index.html">BluetoothKit SDK Documentation</a> (100% documented)</p>
         <div class="header-right">
           <form role="search" action="search.json">
             <input type="text" placeholder="Search documentation" data-typeahead>
@@ -53,18 +53,7 @@
                 <a href="Enums/ConnectionState.html">ConnectionState</a>
               </li>
               <li class="nav-group-task">
-                <a href="Enums/LogLevel.html">LogLevel</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="Enums/RecordingState.html">RecordingState</a>
-              </li>
-            </ul>
-          </li>
-          <li class="nav-group-name">
-            <a href="Protocols.html">Protocols</a>
-            <ul class="nav-group-tasks">
-              <li class="nav-group-task">
-                <a href="Protocols/BluetoothKitLogger.html">BluetoothKitLogger</a>
               </li>
             </ul>
           </li>
@@ -81,9 +70,6 @@
                 <a href="Structs/BluetoothDevice.html">BluetoothDevice</a>
               </li>
               <li class="nav-group-task">
-                <a href="Structs/DefaultLogger.html">DefaultLogger</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="Structs/EEGReading.html">EEGReading</a>
               </li>
               <li class="nav-group-task">
@@ -91,9 +77,6 @@
               </li>
               <li class="nav-group-task">
                 <a href="Structs/SensorConfiguration.html">SensorConfiguration</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="Structs/SilentLogger.html">SilentLogger</a>
               </li>
             </ul>
           </li>
@@ -195,7 +178,7 @@
                         <p>데이터 기록의 현재 상태를 나타내는 열거형입니다.</p>
 
 <p>이 열거형은 센서 데이터의 파일 기록 상태를 추적합니다.
-기록 시작, 진행 중, 종료 등의 상태를 구분하여
+기록 시작과 종료 상태를 구분하여
 사용자 인터페이스와 내부 로직에서 활용됩니다.</p>
 
 <p><strong>⚠️ 중요: 이 상태들은 SDK에서 자동으로 관리됩니다.</strong>
@@ -217,58 +200,6 @@
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">RecordingState</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
-
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-              </ul>
-            </div>
-            <div class="task-group">
-              <div class="task-name-container">
-                <a name="/Logging%20System"></a>
-                <a name="//apple_ref/swift/Section/Logging System" class="dashAnchor"></a>
-                <div class="section-name-container">
-                  <a class="section-name-link" href="#/Logging%20System"></a>
-                  <h3 class="section-name"><span>Logging System</span>
-</h3>
-                </div>
-              </div>
-              <ul>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:12BluetoothKit8LogLevelO"></a>
-                    <a name="//apple_ref/swift/Enum/LogLevel" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12BluetoothKit8LogLevelO">LogLevel</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>로그 메시지의 중요도 레벨을 나타내는 열거형입니다.</p>
-
-<p>BluetoothKit 내부의 로깅 시스템에서 사용되며,
-개발자가 필요한 레벨의 로그만 필터링하여 볼 수 있도록 합니다.
-각 레벨은 이모지와 함께 시각적으로 구분됩니다.</p>
-<h2 id='예시' class='heading'>예시</h2>
-<pre class="highlight swift"><code><span class="c1">// 정보 레벨 이상의 로그만 표시</span>
-<span class="k">let</span> <span class="nv">logger</span> <span class="o">=</span> <span class="kt">DefaultLogger</span><span class="p">(</span><span class="nv">minimumLevel</span><span class="p">:</span> <span class="o">.</span><span class="n">info</span><span class="p">)</span>
-
-<span class="c1">// 로그 레벨 확인</span>
-<span class="nf">print</span><span class="p">(</span><span class="s">"에러 레벨: </span><span class="se">\(</span><span class="kt">LogLevel</span><span class="o">.</span><span class="n">error</span><span class="o">.</span><span class="n">emoji</span><span class="se">)</span><span class="s"> </span><span class="se">\(</span><span class="kt">LogLevel</span><span class="o">.</span><span class="n">error</span><span class="o">.</span><span class="n">name</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
-</code></pre>
-
-                        <a href="Enums/LogLevel.html" class="slightly-smaller">See more</a>
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">LogLevel</span> <span class="p">:</span> <span class="kt">Int</span><span class="p">,</span> <span class="kt">Sendable</span><span class="p">,</span> <span class="kt">CaseIterable</span></code></pre>
 
                         </div>
                       </div>
@@ -347,7 +278,7 @@
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2025 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2025-06-05)</p>
+          <p>© 2024 BluetoothKit SDK. All rights reserved.</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>

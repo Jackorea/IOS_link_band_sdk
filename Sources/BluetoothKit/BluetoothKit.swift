@@ -124,36 +124,32 @@ public class BluetoothKit: ObservableObject, @unchecked Sendable {
     private let bluetoothManager: BluetoothManager
     private let dataRecorder: DataRecorder
     private let configuration: SensorConfiguration
-    private let logger: BluetoothKitLogger
+    private let logger: InternalLogger
     
     // MARK: - Initialization
     
     /// 새로운 BluetoothKit 인스턴스를 생성합니다.
     ///
     /// - Parameters:
-    ///   - configuration: 센서 구성 설정. 기본값은 `.default`입니다.
-    ///   - logger: 디버깅을 위한 로거 구현. 기본값은 `DefaultLogger()`입니다.
+    ///   - configuration: 센서 구성 설정 (선택사항). 기본값: .default
+    ///   - enableLogging: 로그 출력 활성화 여부 (선택사항). 기본값: true
     ///
     /// ## 예시
     ///
     /// ```swift
-    /// // 기본 설정 사용
+    /// // 기본 설정 (로그 활성화)
     /// let bluetoothKit = BluetoothKit()
     ///
-    /// // 높은 샘플링 레이트를 가진 사용자 정의 설정
-    /// let config = SensorConfiguration(
-    ///     eegSampleRate: 500.0,
-    ///     ppgSampleRate: 100.0,
-    ///     deviceNamePrefix: "MyDevice-"
-    /// )
+    /// // 커스텀 설정
+    /// let config = SensorConfiguration(deviceNamePrefix: "MyDevice-")
     /// let bluetoothKit = BluetoothKit(configuration: config)
     ///
-    /// // 프로덕션용 무음 로깅
-    /// let bluetoothKit = BluetoothKit(logger: SilentLogger())
+    /// // 로그 비활성화 (프로덕션용)
+    /// let bluetoothKit = BluetoothKit(enableLogging: false)
     /// ```
-    public init(configuration: SensorConfiguration = .default, logger: BluetoothKitLogger = DefaultLogger()) {
+    public init(configuration: SensorConfiguration = .default, enableLogging: Bool = true) {
         self.configuration = configuration
-        self.logger = logger
+        self.logger = InternalLogger(isEnabled: enableLogging)
         self.bluetoothManager = BluetoothManager(configuration: configuration, logger: logger)
         self.dataRecorder = DataRecorder(logger: logger)
         
@@ -162,8 +158,6 @@ public class BluetoothKit: ObservableObject, @unchecked Sendable {
         
         setupDelegates()
         updateRecordedFiles()
-        
-        log("BluetoothKit initialized", level: .info)
     }
     
     // MARK: - Public Interface
@@ -186,7 +180,6 @@ public class BluetoothKit: ObservableObject, @unchecked Sendable {
     /// }
     /// ```
     public func startScanning() {
-        log("Starting device scan", level: .info)
         bluetoothManager.startScanning()
     }
     
@@ -194,7 +187,6 @@ public class BluetoothKit: ObservableObject, @unchecked Sendable {
     ///
     /// 진행 중인 모든 디바이스 검색 프로세스를 취소합니다.
     public func stopScanning() {
-        log("Stopping device scan", level: .info)
         bluetoothManager.stopScanning()
     }
     
@@ -225,7 +217,6 @@ public class BluetoothKit: ObservableObject, @unchecked Sendable {
     /// }
     /// ```
     public func connect(to device: BluetoothDevice) {
-        log("Attempting to connect to device: \(device.name)", level: .info)
         bluetoothManager.connect(to: device)
     }
     
@@ -234,8 +225,6 @@ public class BluetoothKit: ObservableObject, @unchecked Sendable {
     /// 기록이 활성화되어 있다면, 연결 해제 전에 자동으로 중지됩니다.
     /// 이 연결 해제에 대해 auto-reconnection을 비활성화합니다.
     public func disconnect() {
-        log("Disconnecting from current device", level: .info)
-        // 활성화된 경우 기록 중지
         if isRecording {
             stopRecording()
         }
@@ -274,7 +263,6 @@ public class BluetoothKit: ObservableObject, @unchecked Sendable {
     /// }
     /// ```
     public func startRecording() {
-        log("Starting data recording", level: .info)
         dataRecorder.startRecording()
     }
     
@@ -283,7 +271,6 @@ public class BluetoothKit: ObservableObject, @unchecked Sendable {
     /// 모든 데이터 파일을 마무리하고 저장합니다. `recordedFiles` 배열이
     /// 저장된 파일들의 URL로 업데이트됩니다.
     public func stopRecording() {
-        log("Stopping data recording", level: .info)
         dataRecorder.stopRecording()
     }
     
@@ -329,7 +316,6 @@ public class BluetoothKit: ObservableObject, @unchecked Sendable {
     /// bluetoothKit.setAutoReconnect(enabled: false)
     /// ```
     public func setAutoReconnect(enabled: Bool) {
-        log("Auto-reconnect \(enabled ? "enabled" : "disabled")", level: .info)
         isAutoReconnectEnabled = enabled
         bluetoothManager.enableAutoReconnect(enabled)
     }
@@ -345,10 +331,6 @@ public class BluetoothKit: ObservableObject, @unchecked Sendable {
     private func updateRecordedFiles() {
         recordedFiles = dataRecorder.getRecordedFiles()
     }
-    
-    private func log(_ message: String, level: LogLevel, file: String = #file, function: String = #function, line: Int = #line) {
-        logger.log(message, level: level, file: file, function: function, line: line)
-    }
 }
 
 // MARK: - BluetoothManagerDelegate
@@ -360,10 +342,8 @@ extension BluetoothKit: BluetoothManagerDelegate {
         connectionState = state
         isScanning = bluetoothManager.isScanning
         
-        // Bluetooth 비활성화 알림 처리
         if case .failed(let error) = state,
-           let bluetoothError = error as? BluetoothKitError,
-           bluetoothError == .bluetoothUnavailable {
+           error == .bluetoothUnavailable {
             isBluetoothDisabled = true
         } else {
             isBluetoothDisabled = false
@@ -377,15 +357,14 @@ extension BluetoothKit: BluetoothManagerDelegate {
     }
     
     public func bluetoothManager(_ manager: AnyObject, didConnectToDevice device: BluetoothDevice) {
-        log("Successfully connected to \(device.name)", level: .info)
+        // 연결 성공 로그 제거
     }
     
     public func bluetoothManager(_ manager: AnyObject, didDisconnectFromDevice device: BluetoothDevice, error: Error?) {
         if let error = error {
-            log("Disconnected from \(device.name) with error: \(error.localizedDescription)", level: .warning)
-        } else {
-            log("Disconnected from \(device.name)", level: .info)
+            log("Disconnected from \(device.name) with error: \(error.localizedDescription)")
         }
+        // 정상 연결 해제는 로그하지 않음
     }
 }
 
@@ -397,49 +376,33 @@ extension BluetoothKit: SensorDataDelegate {
     public func didReceiveEEGData(_ reading: EEGReading) {
         latestEEGReading = reading
         
-        // 기록이 활성화된 경우 기록
         if isRecording {
             dataRecorder.recordEEGData([reading])
         }
-        
-        // 디버깅을 위한 실시간 데이터 로그
-        let status = reading.leadOff ? "Disconnected" : "Connected"
-        log("EEG Live - CH1: \(String(format: "%.1f", reading.channel1)) µV, CH2: \(String(format: "%.1f", reading.channel2)) µV, Status: \(status)", level: .debug)
     }
     
     public func didReceivePPGData(_ reading: PPGReading) {
         latestPPGReading = reading
         
-        // 기록이 활성화된 경우 기록
         if isRecording {
             dataRecorder.recordPPGData([reading])
         }
-        
-        // 디버깅을 위한 실시간 데이터 로그
-        log("PPG Live - Red: \(reading.red), IR: \(reading.ir)", level: .debug)
     }
     
     public func didReceiveAccelerometerData(_ reading: AccelerometerReading) {
         latestAccelerometerReading = reading
         
-        // 기록이 활성화된 경우 기록
         if isRecording {
             dataRecorder.recordAccelerometerData([reading])
         }
-        
-        // 디버깅을 위한 실시간 데이터 로그
-        log("Accel Live - X: \(reading.x), Y: \(reading.y), Z: \(reading.z)", level: .debug)
     }
     
     public func didReceiveBatteryData(_ reading: BatteryReading) {
         latestBatteryReading = reading
         
-        // 기록이 활성화된 경우 기록
         if isRecording {
             dataRecorder.recordBatteryData(reading)
         }
-        
-        log("Battery: \(reading.level)%", level: .debug)
     }
 }
 
@@ -450,17 +413,21 @@ extension BluetoothKit: DataRecorderDelegate {
     
     public func dataRecorder(_ recorder: AnyObject, didStartRecording at: Date) {
         isRecording = true
-        log("Recording started at \(at)", level: .info)
     }
     
     public func dataRecorder(_ recorder: AnyObject, didStopRecording at: Date, savedFiles: [URL]) {
         isRecording = false
         recordedFiles = savedFiles
-        log("Recording stopped at \(at). Files saved: \(savedFiles.count)", level: .info)
     }
     
     public func dataRecorder(_ recorder: AnyObject, didFailWithError error: Error) {
         isRecording = false
-        log("Recording failed: \(error.localizedDescription)", level: .error)
+        log("Recording failed: \(error.localizedDescription)")
+    }
+    
+    // MARK: - Private Logging
+    
+    private func log(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
+        logger.log(message, file: file, function: function, line: line)
     }
 } 

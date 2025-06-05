@@ -17,7 +17,7 @@
     <a title="BluetoothKit Class Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="../index.html">BluetoothKit Docs</a> (100% documented)</p>
+        <p><a href="../index.html">BluetoothKit SDK Documentation</a> (100% documented)</p>
         <div class="header-right">
           <form role="search" action="../search.json">
             <input type="text" placeholder="Search documentation" data-typeahead>
@@ -55,18 +55,7 @@
                 <a href="../Enums/ConnectionState.html">ConnectionState</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Enums/LogLevel.html">LogLevel</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="../Enums/RecordingState.html">RecordingState</a>
-              </li>
-            </ul>
-          </li>
-          <li class="nav-group-name">
-            <a href="../Protocols.html">Protocols</a>
-            <ul class="nav-group-tasks">
-              <li class="nav-group-task">
-                <a href="../Protocols/BluetoothKitLogger.html">BluetoothKitLogger</a>
               </li>
             </ul>
           </li>
@@ -83,9 +72,6 @@
                 <a href="../Structs/BluetoothDevice.html">BluetoothDevice</a>
               </li>
               <li class="nav-group-task">
-                <a href="../Structs/DefaultLogger.html">DefaultLogger</a>
-              </li>
-              <li class="nav-group-task">
                 <a href="../Structs/EEGReading.html">EEGReading</a>
               </li>
               <li class="nav-group-task">
@@ -93,9 +79,6 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/SensorConfiguration.html">SensorConfiguration</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Structs/SilentLogger.html">SilentLogger</a>
               </li>
             </ul>
           </li>
@@ -527,9 +510,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:12BluetoothKitAAC13configuration6loggerAbA19SensorConfigurationV_AA0aB6Logger_ptcfc"></a>
-                    <a name="//apple_ref/swift/Method/init(configuration:logger:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12BluetoothKitAAC13configuration6loggerAbA19SensorConfigurationV_AA0aB6Logger_ptcfc">init(configuration:<wbr>logger:<wbr>)</a>
+                    <a name="/s:12BluetoothKitAAC13configuration13enableLoggingAbA19SensorConfigurationV_Sbtcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(configuration:enableLogging:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12BluetoothKitAAC13configuration13enableLoggingAbA19SensorConfigurationV_Sbtcfc">init(configuration:<wbr>enableLogging:<wbr>)</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -539,19 +522,15 @@
                       <div class="abstract">
                         <p>새로운 BluetoothKit 인스턴스를 생성합니다.</p>
 <h2 id='예시' class='heading'>예시</h2>
-<pre class="highlight swift"><code><span class="c1">// 기본 설정 사용</span>
+<pre class="highlight swift"><code><span class="c1">// 기본 설정 (로그 활성화)</span>
 <span class="k">let</span> <span class="nv">bluetoothKit</span> <span class="o">=</span> <span class="kt">BluetoothKit</span><span class="p">()</span>
 
-<span class="c1">// 높은 샘플링 레이트를 가진 사용자 정의 설정</span>
-<span class="k">let</span> <span class="nv">config</span> <span class="o">=</span> <span class="kt">SensorConfiguration</span><span class="p">(</span>
-    <span class="nv">eegSampleRate</span><span class="p">:</span> <span class="mf">500.0</span><span class="p">,</span>
-    <span class="nv">ppgSampleRate</span><span class="p">:</span> <span class="mf">100.0</span><span class="p">,</span>
-    <span class="nv">deviceNamePrefix</span><span class="p">:</span> <span class="s">"MyDevice-"</span>
-<span class="p">)</span>
+<span class="c1">// 커스텀 설정</span>
+<span class="k">let</span> <span class="nv">config</span> <span class="o">=</span> <span class="kt">SensorConfiguration</span><span class="p">(</span><span class="nv">deviceNamePrefix</span><span class="p">:</span> <span class="s">"MyDevice-"</span><span class="p">)</span>
 <span class="k">let</span> <span class="nv">bluetoothKit</span> <span class="o">=</span> <span class="kt">BluetoothKit</span><span class="p">(</span><span class="nv">configuration</span><span class="p">:</span> <span class="n">config</span><span class="p">)</span>
 
-<span class="c1">// 프로덕션용 무음 로깅</span>
-<span class="k">let</span> <span class="nv">bluetoothKit</span> <span class="o">=</span> <span class="kt">BluetoothKit</span><span class="p">(</span><span class="nv">logger</span><span class="p">:</span> <span class="kt">SilentLogger</span><span class="p">())</span>
+<span class="c1">// 로그 비활성화 (프로덕션용)</span>
+<span class="k">let</span> <span class="nv">bluetoothKit</span> <span class="o">=</span> <span class="kt">BluetoothKit</span><span class="p">(</span><span class="nv">enableLogging</span><span class="p">:</span> <span class="kc">false</span><span class="p">)</span>
 </code></pre>
 
                       </div>
@@ -559,7 +538,7 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">configuration</span><span class="p">:</span> <span class="kt"><a href="../Structs/SensorConfiguration.html">SensorConfiguration</a></span> <span class="o">=</span> <span class="o">.</span><span class="k">default</span><span class="p">,</span> <span class="nv">logger</span><span class="p">:</span> <span class="kt"><a href="../Protocols/BluetoothKitLogger.html">BluetoothKitLogger</a></span> <span class="o">=</span> <span class="kt"><a href="../Structs/DefaultLogger.html">DefaultLogger</a></span><span class="p">())</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">configuration</span><span class="p">:</span> <span class="kt"><a href="../Structs/SensorConfiguration.html">SensorConfiguration</a></span> <span class="o">=</span> <span class="o">.</span><span class="k">default</span><span class="p">,</span> <span class="nv">enableLogging</span><span class="p">:</span> <span class="kt">Bool</span> <span class="o">=</span> <span class="kc">true</span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
@@ -575,19 +554,19 @@
                               </td>
                               <td>
                                 <div>
-                                  <p>센서 구성 설정. 기본값은 <code>.default</code>입니다.</p>
+                                  <p>센서 구성 설정 (선택사항). 기본값: .default</p>
                                 </div>
                               </td>
                             </tr>
                             <tr>
                               <td>
                                 <code>
-                                <em>logger</em>
+                                <em>enableLogging</em>
                                 </code>
                               </td>
                               <td>
                                 <div>
-                                  <p>디버깅을 위한 로거 구현. 기본값은 <code>DefaultLogger()</code>입니다.</p>
+                                  <p>로그 출력 활성화 여부 (선택사항). 기본값: true</p>
                                 </div>
                               </td>
                             </tr>
@@ -1350,7 +1329,7 @@
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2025 <a class="link" href="" target="_blank" rel="external noopener"></a>. All rights reserved. (Last updated: 2025-06-05)</p>
+          <p>© 2024 BluetoothKit SDK. All rights reserved.</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>

@@ -23,19 +23,17 @@ internal class BluetoothManager: NSObject, @unchecked Sendable {
     
     private let configuration: SensorConfiguration
     private let dataParser: SensorDataParser
-    private let logger: BluetoothKitLogger
+    private let logger: InternalLogger
     
-    // 연결 상태 관리
+    // 단순화된 상태 관리
     private var connectionState: ConnectionState = .disconnected {
         didSet {
-            let currentState = connectionState
-            notifyStateChange(currentState)
+            notifyStateChange(connectionState)
         }
     }
     
-    // Auto-reconnection 상태
+    // Auto-reconnection 관리
     private var lastConnectedPeripheralIdentifier: UUID?
-    private var userInitiatedDisconnect = false
     private var isAutoReconnectEnabled: Bool
     
     // MARK: - Initialization
@@ -45,7 +43,7 @@ internal class BluetoothManager: NSObject, @unchecked Sendable {
     /// - Parameters:
     ///   - configuration: 센서 구성 설정
     ///   - logger: 디버깅을 위한 로거 구현
-    public init(configuration: SensorConfiguration, logger: BluetoothKitLogger) {
+    public init(configuration: SensorConfiguration, logger: InternalLogger) {
         self.configuration = configuration
         self.logger = logger
         self.dataParser = SensorDataParser(configuration: configuration)
@@ -54,8 +52,6 @@ internal class BluetoothManager: NSObject, @unchecked Sendable {
         super.init()
         
         centralManager = CBCentralManager(delegate: self, queue: nil)
-        
-        log("BluetoothManager initialized", level: .info)
     }
     
     // MARK: - Public Interface
@@ -86,7 +82,7 @@ internal class BluetoothManager: NSObject, @unchecked Sendable {
     /// Bluetooth가 비활성화된 경우 스캔이 실패할 수 있습니다.
     public func startScanning() {
         guard centralManager.state == .poweredOn else {
-            log("Cannot start scanning: Bluetooth not available", level: .warning)
+            log("Cannot start scanning: Bluetooth not available")
             connectionState = .failed(BluetoothKitError.bluetoothUnavailable)
             return
         }
@@ -95,8 +91,6 @@ internal class BluetoothManager: NSObject, @unchecked Sendable {
         discoveredDevices.removeAll()
         centralManager.scanForPeripherals(withServices: nil)
         connectionState = .scanning
-        
-        log("Started scanning for devices", level: .info)
     }
     
     /// Bluetooth 디바이스 스캔을 중지합니다.
@@ -105,7 +99,6 @@ internal class BluetoothManager: NSObject, @unchecked Sendable {
         if case .scanning = connectionState {
             connectionState = .disconnected
         }
-        log("Stopped scanning", level: .info)
     }
     
     /// 지정된 디바이스에 연결을 시도합니다.
@@ -113,37 +106,28 @@ internal class BluetoothManager: NSObject, @unchecked Sendable {
     /// - Parameter device: 연결할 BluetoothDevice
     public func connect(to device: BluetoothDevice) {
         guard centralManager.state == .poweredOn else {
-            log("Cannot connect: Bluetooth not available", level: .warning)
+            log("Cannot connect: Bluetooth not available")
             connectionState = .failed(BluetoothKitError.bluetoothUnavailable)
             return
         }
         
         stopScanning()
-        userInitiatedDisconnect = false
         connectionState = .connecting(device.name)
         centralManager.connect(device.peripheral, options: nil)
-        
-        log("Attempting to connect to \(device.name)", level: .info)
     }
     
     /// 현재 연결된 디바이스와의 연결을 해제합니다.
     public func disconnect() {
         guard let peripheral = connectedPeripheral else { return }
         
-        userInitiatedDisconnect = true
-        lastConnectedPeripheralIdentifier = nil
         centralManager.cancelPeripheralConnection(peripheral)
-        
-        log("Disconnecting from device", level: .info)
     }
     
     /// 자동 재연결 기능을 활성화하거나 비활성화합니다.
     ///
     /// - Parameter enabled: 자동 재연결 활성화 여부
     public func enableAutoReconnect(_ enabled: Bool) {
-        let previousState = isAutoReconnectEnabled
         isAutoReconnectEnabled = enabled
-        log("Auto-reconnect \(enabled ? "enabled" : "disabled") (was \(previousState ? "enabled" : "disabled"))", level: .info)
         
         if enabled {
             // auto-reconnect가 활성화되고 마지막 연결된 디바이스가 있으며,
@@ -156,31 +140,28 @@ internal class BluetoothManager: NSObject, @unchecked Sendable {
                 if let peripheral = discoveredDevices.first(where: { $0.peripheral.identifier == lastPeripheralId })?.peripheral {
                     connectionState = .reconnecting(peripheral.name ?? "Unknown Device")
                     centralManager.connect(peripheral, options: nil)
-                    log("Auto-reconnect triggered: attempting to reconnect to \(peripheral.name ?? "Unknown Device")", level: .info)
                 } else {
                     // peripheral이 검색된 디바이스에 없다면, 검색을 시도합니다
                     let peripherals = centralManager.retrievePeripherals(withIdentifiers: [lastPeripheralId])
                     if let peripheral = peripherals.first {
                         connectionState = .reconnecting(peripheral.name ?? "Unknown Device")
                         centralManager.connect(peripheral, options: nil)
-                        log("Auto-reconnect triggered: attempting to reconnect to retrieved peripheral \(peripheral.name ?? "Unknown Device")", level: .info)
                     }
                 }
             }
         } else {
             // auto-reconnect가 비활성화되면, 진행 중인 재연결 시도를 취소합니다
-            if case .reconnecting(let deviceName) = connectionState {
+            if case .reconnecting(_) = connectionState {
                 // 재연결을 시도 중인 peripheral을 찾아서 연결을 취소합니다
                 if let lastPeripheralId = lastConnectedPeripheralIdentifier {
                     let peripherals = centralManager.retrievePeripherals(withIdentifiers: [lastPeripheralId])
                     if let peripheral = peripherals.first {
                         centralManager.cancelPeripheralConnection(peripheral)
-                        log("Cancelled ongoing reconnection attempt to \(deviceName)", level: .info)
                     }
                 }
                 connectionState = .disconnected
             }
-            log("Auto-reconnect disabled - all automatic reconnection attempts will be blocked", level: .info)
+            log("Auto-reconnect disabled - all automatic reconnection attempts will be blocked")
         }
     }
     
@@ -196,8 +177,6 @@ internal class BluetoothManager: NSObject, @unchecked Sendable {
             discoveredDevices.append(device)
             
             notifyDeviceDiscovered(device)
-            
-            log("Discovered device: \(name) (RSSI: \(rssi))", level: .debug)
         }
     }
     
@@ -205,7 +184,6 @@ internal class BluetoothManager: NSObject, @unchecked Sendable {
         // 이 연결이 허용되는지 확인합니다
         // auto-reconnect가 비활성화되어 있고 사용자가 시작한 연결이 아니라면, 취소합니다
         if case .reconnecting = connectionState, !isAutoReconnectEnabled {
-            log("Auto-reconnect is disabled, cancelling automatic connection to \(peripheral.name ?? "Unknown Device")", level: .info)
             centralManager.cancelPeripheralConnection(peripheral)
             connectionState = .disconnected
             return
@@ -213,7 +191,6 @@ internal class BluetoothManager: NSObject, @unchecked Sendable {
         
         connectedPeripheral = peripheral
         lastConnectedPeripheralIdentifier = peripheral.identifier
-        userInitiatedDisconnect = false
         
         let deviceName = peripheral.name ?? "Unknown Device"
         connectionState = .connected(deviceName)
@@ -225,15 +202,13 @@ internal class BluetoothManager: NSObject, @unchecked Sendable {
         if let device = discoveredDevices.first(where: { $0.peripheral.identifier == peripheral.identifier }) {
             notifyDeviceConnected(device)
         }
-        
-        log("Connected to \(deviceName)", level: .info)
     }
     
     private func handleConnectionFailure(_ peripheral: CBPeripheral, error: Error?) {
         let errorMessage = error?.localizedDescription ?? "Unknown error"
         connectionState = .failed(BluetoothKitError.connectionFailed(errorMessage))
         
-        log("Connection failed: \(errorMessage)", level: .error)
+        log("Connection failed: \(errorMessage)")
     }
     
     private func handleDisconnection(_ peripheral: CBPeripheral, error: Error?) {
@@ -244,38 +219,21 @@ internal class BluetoothManager: NSObject, @unchecked Sendable {
         }
         
         // auto-reconnection을 처리합니다
-        if !userInitiatedDisconnect,
-           let lastID = lastConnectedPeripheralIdentifier,
-           peripheral.identifier == lastID {
-            
-            if isAutoReconnectEnabled {
-                connectionState = .reconnecting(deviceName)
-                centralManager.connect(peripheral, options: nil)
-                log("Auto-reconnecting to \(deviceName)", level: .info)
-            } else {
-                connectionState = .disconnected
-                log("Auto-reconnect is disabled, not attempting to reconnect to \(deviceName)", level: .info)
-            }
-        } else {
+        if !isAutoReconnectEnabled {
             connectionState = .disconnected
-            if userInitiatedDisconnect {
-                lastConnectedPeripheralIdentifier = nil
-                userInitiatedDisconnect = false
-                log("User initiated disconnect, clearing last connected device", level: .debug)
-            }
+        } else {
+            connectionState = .reconnecting(deviceName)
+            centralManager.connect(peripheral, options: nil)
         }
         
         if let device = discoveredDevices.first(where: { $0.peripheral.identifier == peripheral.identifier }) {
             notifyDeviceDisconnected(device, error: error)
         }
-        
-        let errorInfo = error?.localizedDescription ?? "No error"
-        log("Disconnected from \(deviceName): \(errorInfo)", level: .info)
     }
     
     private func handleCharacteristicUpdate(_ characteristic: CBCharacteristic, error: Error?) {
         guard let data = characteristic.value, error == nil else {
-            log("Characteristic update error: \(error?.localizedDescription ?? "Unknown")", level: .warning)
+            log("Characteristic update error: \(error?.localizedDescription ?? "Unknown")")
             return
         }
         
@@ -312,15 +270,15 @@ internal class BluetoothManager: NSObject, @unchecked Sendable {
                 }
                 
             default:
-                log("Received data from unknown characteristic: \(characteristic.uuid)", level: .debug)
+                log("Received data from unknown characteristic: \(characteristic.uuid)")
             }
         } catch {
-            log("Data parsing error: \(error)", level: .error)
+            log("Data parsing error: \(error)")
         }
     }
     
-    private func log(_ message: String, level: LogLevel, file: String = #file, function: String = #function, line: Int = #line) {
-        logger.log(message, level: level, file: file, function: function, line: line)
+    private func log(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
+        logger.log(message, file: file, function: function, line: line)
     }
     
     // MARK: - Private Helper Methods
@@ -393,26 +351,21 @@ extension BluetoothManager: CBCentralManagerDelegate {
     public func centralManagerDidUpdateState(_ central: CBCentralManager) {
         switch central.state {
         case .poweredOn:
-            log("📶 Bluetooth is powered on", level: .info)
             if case .failed(let error) = connectionState,
                error == .bluetoothUnavailable {
                 connectionState = .disconnected
             }
             
         case .poweredOff:
-            log("📵 Bluetooth is powered off", level: .info)
             connectionState = .failed(BluetoothKitError.bluetoothUnavailable)
             
         case .unauthorized:
-            log("🚫 Bluetooth access unauthorized", level: .info)
             connectionState = .failed(BluetoothKitError.bluetoothUnavailable)
             
         case .unsupported:
-            log("❌ Bluetooth not supported", level: .info)
             connectionState = .failed(BluetoothKitError.bluetoothUnavailable)
             
         default:
-            log("🔄 Bluetooth state: \(central.state.rawValue)", level: .info)
             connectionState = .failed(BluetoothKitError.bluetoothUnavailable)
         }
     }
@@ -511,7 +464,6 @@ extension BluetoothManager: CBPeripheralDelegate {
         for characteristic in characteristics {
             if SensorUUID.allSensorCharacteristics.contains(characteristic.uuid) {
                 peripheral.setNotifyValue(true, for: characteristic)
-                log("Enabled notifications for characteristic: \(characteristic.uuid)", level: .debug)
             }
         }
     }

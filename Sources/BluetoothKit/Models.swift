@@ -355,7 +355,7 @@ public enum ConnectionState: Sendable, Equatable {
 /// 데이터 기록의 현재 상태를 나타내는 열거형입니다.
 ///
 /// 이 열거형은 센서 데이터의 파일 기록 상태를 추적합니다.
-/// 기록 시작, 진행 중, 종료 등의 상태를 구분하여
+/// 기록 시작과 종료 상태를 구분하여
 /// 사용자 인터페이스와 내부 로직에서 활용됩니다.
 ///
 /// **⚠️ 중요: 이 상태들은 SDK에서 자동으로 관리됩니다.**
@@ -378,9 +378,6 @@ public enum RecordingState: Sendable {
     
     /// 현재 데이터를 기록하고 있는 상태입니다.
     case recording
-    
-    /// 기록을 중지하는 과정에 있는 상태입니다.
-    case stopping
     
     /// 현재 기록 중인지 여부를 나타내는 편의 속성입니다.
     public var isRecording: Bool {
@@ -513,144 +510,16 @@ internal struct SensorUUID {
 
 // MARK: - Logging System
 
-/// 로그 메시지의 중요도 레벨을 나타내는 열거형입니다.
-///
-/// BluetoothKit 내부의 로깅 시스템에서 사용되며,
-/// 개발자가 필요한 레벨의 로그만 필터링하여 볼 수 있도록 합니다.
-/// 각 레벨은 이모지와 함께 시각적으로 구분됩니다.
-///
-/// ## 예시
-///
-/// ```swift
-/// // 정보 레벨 이상의 로그만 표시
-/// let logger = DefaultLogger(minimumLevel: .info)
-/// 
-/// // 로그 레벨 확인
-/// print("에러 레벨: \(LogLevel.error.emoji) \(LogLevel.error.name)")
-/// ```
-public enum LogLevel: Int, Sendable, CaseIterable {
-    /// 디버깅 정보를 위한 가장 상세한 로그 레벨입니다.
-    ///
-    /// 개발 중 상세한 실행 흐름을 추적할 때 사용됩니다.
-    case debug = 0
+/// 내부 로깅을 위한 간단한 로거입니다.
+internal struct InternalLogger {
+    let isEnabled: Bool
     
-    /// 일반적인 정보성 메시지를 위한 로그 레벨입니다.
-    ///
-    /// 정상적인 동작 상태와 주요 이벤트를 기록할 때 사용됩니다.
-    case info = 1
-    
-    /// 주의가 필요한 상황을 나타내는 로그 레벨입니다.
-    ///
-    /// 오류는 아니지만 예상치 못한 상황이나 잠재적 문제를 알릴 때 사용됩니다.
-    case warning = 2
-    
-    /// 오류 상황을 나타내는 가장 높은 로그 레벨입니다.
-    ///
-    /// 실패한 작업이나 예외 상황을 기록할 때 사용됩니다.
-    case error = 3
-    
-    /// 로그 레벨을 시각적으로 구분하기 위한 이모지입니다.
-    public var emoji: String {
-        switch self {
-        case .debug: return "🔍"
-        case .info: return "ℹ️"
-        case .warning: return "⚠️"
-        case .error: return "❌"
-        }
-    }
-    
-    /// 로그 레벨의 문자열 표현입니다.
-    public var name: String {
-        switch self {
-        case .debug: return "DEBUG"
-        case .info: return "INFO"
-        case .warning: return "WARNING"
-        case .error: return "ERROR"
-        }
-    }
-}
-
-/// BluetoothKit의 로깅을 담당하는 프로토콜입니다.
-///
-/// 이 프로토콜을 구현하여 사용자 정의 로깅 동작을 제공할 수 있습니다.
-/// 기본 구현체로 `DefaultLogger`와 `SilentLogger`가 제공됩니다.
-///
-/// ## 예시
-///
-/// ```swift
-/// struct CustomLogger: BluetoothKitLogger {
-///     func log(_ message: String, level: LogLevel, file: String, function: String, line: Int) {
-///         // 사용자 정의 로깅 로직
-///         writeToFile("[\(level.name)] \(message)")
-///     }
-/// }
-/// ```
-public protocol BluetoothKitLogger: Sendable {
-    /// 로그 메시지를 기록합니다.
-    ///
-    /// - Parameters:
-    ///   - message: 기록할 메시지
-    ///   - level: 로그 레벨
-    ///   - file: 로그가 호출된 파일명
-    ///   - function: 로그가 호출된 함수명
-    ///   - line: 로그가 호출된 라인 번호
-    func log(_ message: String, level: LogLevel, file: String, function: String, line: Int)
-}
-
-/// 콘솔에 로그를 출력하는 기본 로거 구현체입니다.
-///
-/// 설정된 최소 로그 레벨 이상의 메시지만 출력하며,
-/// 타임스탬프, 로그 레벨, 파일 정보와 함께 메시지를 표시합니다.
-///
-/// ## 예시
-///
-/// ```swift
-/// // 정보 레벨 이상만 출력
-/// let logger = DefaultLogger(minimumLevel: .info)
-/// 
-/// // 모든 레벨 출력 (디버그 포함)
-/// let debugLogger = DefaultLogger(minimumLevel: .debug)
-/// ```
-public struct DefaultLogger: BluetoothKitLogger {
-    /// 출력할 최소 로그 레벨입니다.
-    ///
-    /// 이 레벨보다 낮은 우선순위의 로그는 무시됩니다.
-    public let minimumLevel: LogLevel
-    
-    /// 새로운 DefaultLogger 인스턴스를 생성합니다.
-    ///
-    /// - Parameter minimumLevel: 출력할 최소 로그 레벨 (기본값: .info)
-    public init(minimumLevel: LogLevel = .info) {
-        self.minimumLevel = minimumLevel
-    }
-    
-    /// 로그 메시지를 콘솔에 출력합니다.
-    public func log(_ message: String, level: LogLevel, file: String, function: String, line: Int) {
-        guard level.rawValue >= minimumLevel.rawValue else { return }
+    func log(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
+        guard isEnabled else { return }
         
         let fileName = (file as NSString).lastPathComponent
         let timestamp = DateFormatter.logFormatter.string(from: Date())
-        print("[\(timestamp)] \(level.emoji) \(level.name) [\(fileName):\(line)] \(message)")
-    }
-}
-
-/// 로그 출력을 완전히 비활성화하는 로거 구현체입니다.
-///
-/// 프로덕션 환경이나 로그가 필요하지 않은 상황에서 사용됩니다.
-/// 모든 로그 메시지를 무시하여 성능 오버헤드를 최소화합니다.
-///
-/// ## 예시
-///
-/// ```swift
-/// let bluetoothKit = BluetoothKit(logger: SilentLogger())
-/// ```
-public struct SilentLogger: BluetoothKitLogger {
-    /// 새로운 SilentLogger 인스턴스를 생성합니다.
-    public init() {}
-    
-    /// 로그 메시지를 무시합니다 (아무 동작도 하지 않음).
-    public func log(_ message: String, level: LogLevel, file: String, function: String, line: Int) {
-        // 아무것도 하지 않음
+        print("[\(timestamp)] [\(fileName):\(line)] \(message)")
     }
 }
 

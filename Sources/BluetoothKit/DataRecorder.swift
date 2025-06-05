@@ -14,9 +14,7 @@ internal class DataRecorder: @unchecked Sendable {
     public weak var delegate: DataRecorderDelegate?
     
     private var recordingState: RecordingState = .idle
-    private var recordingStartDate: Date?
-    private var recordingTimer: Timer?
-    private let logger: BluetoothKitLogger
+    private let logger: InternalLogger
     
     // File writers - using a serial queue for thread safety
     private let fileQueue = DispatchQueue(label: "com.bluetoothkit.filewriter", qos: .utility)
@@ -35,11 +33,10 @@ internal class DataRecorder: @unchecked Sendable {
     
     /// 새로운 DataRecorder 인스턴스를 생성합니다.
     ///
-    /// - Parameter logger: 디버깅을 위한 로거 구현 (기본값: DefaultLogger())
-    public init(logger: BluetoothKitLogger = DefaultLogger()) {
+    /// - Parameter logger: 로깅을 위한 내부 로거 (기본값: 비활성화)
+    public init(logger: InternalLogger = InternalLogger(isEnabled: false)) {
         self.logger = logger
         initializeRawDataDict()
-        log("DataRecorder initialized", level: .debug)
     }
     
     deinit {
@@ -78,7 +75,7 @@ internal class DataRecorder: @unchecked Sendable {
     public func startRecording() {
         guard recordingState == .idle else {
             let error = BluetoothKitError.recordingFailed("Already recording")
-            log("Failed to start recording: Already recording", level: .warning)
+            log("Failed to start recording: Already recording")
             notifyRecordingError(error)
             return
         }
@@ -86,15 +83,12 @@ internal class DataRecorder: @unchecked Sendable {
         do {
             try setupRecordingFiles()
             recordingState = .recording
-            recordingStartDate = Date()
-            startRecordingTimer()
             
-            let startDate = recordingStartDate!
+            let startDate = Date()
             notifyRecordingStarted(at: startDate)
-            log("Recording started", level: .info)
         } catch {
             notifyRecordingError(error)
-            log("Failed to start recording: \(error.localizedDescription)", level: .error)
+            log("Failed to start recording: \(error.localizedDescription)")
         }
     }
     
@@ -105,9 +99,6 @@ internal class DataRecorder: @unchecked Sendable {
     public func stopRecording() {
         guard recordingState == .recording else { return }
         
-        recordingState = .stopping
-        stopRecordingTimer()
-        
         do {
             try finalizeRecording()
             recordingState = .idle
@@ -115,11 +106,10 @@ internal class DataRecorder: @unchecked Sendable {
             let endDate = Date()
             let savedFiles = currentRecordingFiles
             notifyRecordingStopped(at: endDate, savedFiles: savedFiles)
-            log("Recording stopped. Files saved: \(currentRecordingFiles.count)", level: .info)
         } catch {
             recordingState = .idle
             notifyRecordingError(error)
-            log("Failed to stop recording: \(error.localizedDescription)", level: .error)
+            log("Failed to stop recording: \(error.localizedDescription)")
         }
     }
     
@@ -193,8 +183,7 @@ internal class DataRecorder: @unchecked Sendable {
     public func recordBatteryData(_ reading: BatteryReading) {
         guard isRecording else { return }
         
-        // Battery data is not typically recorded in bulk, just logged
-        log("Battery: \(reading.level)%", level: .debug)
+        // Battery data is not typically recorded in bulk, just noted
     }
     
     // MARK: - Private Methods
@@ -282,19 +271,6 @@ internal class DataRecorder: @unchecked Sendable {
         currentRecordingFiles.append(accelCsvURL)
     }
     
-    private func startRecordingTimer() {
-        recordingTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            guard let self = self, self.isRecording else { return }
-            let currentTime = Date().timeIntervalSince1970 * 1000 // 밀리세컨드 단위
-            self.appendToRawDataDict("timestamp", value: currentTime)
-        }
-    }
-    
-    private func stopRecordingTimer() {
-        recordingTimer?.invalidate()
-        recordingTimer = nil
-    }
-    
     private func appendToRawDataDict<T>(_ key: String, value: T) {
         if var array = rawDataDict[key] as? [T] {
             array.append(value)
@@ -344,8 +320,8 @@ internal class DataRecorder: @unchecked Sendable {
         accelCsvWriter = nil
     }
     
-    private func log(_ message: String, level: LogLevel, file: String = #file, function: String = #function, line: Int = #line) {
-        logger.log(message, level: level, file: file, function: function, line: line)
+    private func log(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
+        logger.log(message, file: file, function: function, line: line)
     }
     
     // MARK: - Private Helper Methods for Safe Delegate Calls

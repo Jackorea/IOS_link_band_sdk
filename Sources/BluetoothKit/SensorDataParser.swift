@@ -184,10 +184,4 @@ internal class SensorDataParser: @unchecked Sendable {
         
         return BatteryReading(level: level)
     }
-}
-
-// MARK: - Data Validation Extensions
-
-internal extension SensorDataParser {
-    // All validation functions removed as they were not being used
 } 
