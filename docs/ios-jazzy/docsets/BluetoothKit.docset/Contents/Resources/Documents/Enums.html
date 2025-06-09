@@ -52,9 +52,6 @@
               <li class="nav-group-task">
                 <a href="Enums/ConnectionState.html">ConnectionState</a>
               </li>
-              <li class="nav-group-task">
-                <a href="Enums/RecordingState.html">RecordingState</a>
-              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -140,63 +137,6 @@
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">ConnectionState</span> <span class="p">:</span> <span class="kt">Sendable</span><span class="p">,</span> <span class="kt">Equatable</span></code></pre>
-
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-              </ul>
-            </div>
-            <div class="task-group">
-              <div class="task-name-container">
-                <a name="/Recording%20State"></a>
-                <a name="//apple_ref/swift/Section/Recording State" class="dashAnchor"></a>
-                <div class="section-name-container">
-                  <a class="section-name-link" href="#/Recording%20State"></a>
-                  <h3 class="section-name"><span>Recording State</span>
-</h3>
-                </div>
-              </div>
-              <ul>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:12BluetoothKit14RecordingStateO"></a>
-                    <a name="//apple_ref/swift/Enum/RecordingState" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12BluetoothKit14RecordingStateO">RecordingState</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>데이터 기록의 현재 상태를 나타내는 열거형입니다.</p>
-
-<p>이 열거형은 센서 데이터의 파일 기록 상태를 추적합니다.
-기록 시작과 종료 상태를 구분하여
-사용자 인터페이스와 내부 로직에서 활용됩니다.</p>
-
-<p><strong>⚠️ 중요: 이 상태들은 SDK에서 자동으로 관리됩니다.</strong>
-<strong>사용자가 직접 생성하지 마세요. 읽기 전용으로만 사용하세요.</strong></p>
-<h2 id='사용-예시' class='heading'>사용 예시</h2>
-<pre class="highlight swift"><code><span class="c1">// ✅ 올바른 사용법 - 상태 확인</span>
-<span class="k">if</span> <span class="n">bluetoothKit</span><span class="o">.</span><span class="n">isRecording</span> <span class="p">{</span>
-    <span class="nf">showRecordingIndicator</span><span class="p">()</span>
-<span class="p">}</span>
-
-<span class="c1">// ❌ 잘못된 사용법 - 직접 상태 생성하지 마세요</span>
-<span class="c1">// let fakeState = RecordingState.recording</span>
-</code></pre>
-
-                        <a href="Enums/RecordingState.html" class="slightly-smaller">See more</a>
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">RecordingState</span> <span class="p">:</span> <span class="kt">Sendable</span></code></pre>
 
                         </div>
                       </div>

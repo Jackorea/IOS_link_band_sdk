@@ -3,26 +3,20 @@ import CoreBluetooth
 
 // MARK: - Device Models
 
-/// Bluetooth Low Energy 디바이스를 나타내는 구조체입니다.
+/// Bluetooth 디바이스를 나타내는 구조체입니다.
 ///
-/// 이 구조체는 스캔 중 발견된 BLE 디바이스의 정보를 캡슐화합니다.
-/// 각 디바이스는 고유한 식별자를 가지며, Core Bluetooth 페리페럴 객체와
-/// 디바이스의 표시 이름, 신호 강도 정보를 포함합니다.
+/// 스캔 중 발견된 Bluetooth Low Energy (BLE) 디바이스의 정보를 담고 있습니다.
+/// 이 구조체는 연결 대상 디바이스를 식별하고 연결 작업에 사용됩니다.
 ///
 /// ## 예시
 ///
 /// ```swift
-/// let device = BluetoothDevice(
-///     peripheral: cbPeripheral,
-///     name: "LXB-001",
-///     rssi: -45
-/// )
-/// print("디바이스: \(device.name), 신호강도: \(device.rssi)dBm")
+/// // 발견된 디바이스 목록에서 연결할 디바이스 선택
+/// if let device = bluetoothKit.discoveredDevices.first {
+///     bluetoothKit.connect(to: device)
+/// }
 /// ```
-public struct BluetoothDevice: Identifiable, Equatable, @unchecked Sendable {
-    /// SwiftUI 목록에서 사용되는 고유 식별자입니다.
-    public let id: UUID = UUID()
-    
+public struct BluetoothDevice: @unchecked Sendable {
     /// Core Bluetooth 페리페럴 객체입니다.
     ///
     /// 실제 BLE 통신을 위해 사용되는 CBPeripheral 인스턴스입니다.
@@ -36,29 +30,20 @@ public struct BluetoothDevice: Identifiable, Equatable, @unchecked Sendable {
     /// 일반적으로 "LXB-" 접두사를 가진 형태입니다.
     public let name: String
     
-    /// 수신 신호 강도 표시값(RSSI)입니다.
-    ///
-    /// dBm 단위로 측정된 신호 강도를 나타냅니다.
-    /// 값이 0에 가까울수록 신호가 강하며, 일반적으로 -30에서 -100 범위입니다.
-    /// 디바이스가 스캔 중이 아닐 때는 `nil`일 수 있습니다.
-    public let rssi: NSNumber?
-    
     /// 새로운 BluetoothDevice 인스턴스를 생성합니다.
     ///
     /// - Parameters:
     ///   - peripheral: Core Bluetooth peripheral
     ///   - name: 디바이스 이름
-    ///   - rssi: 신호 강도 (선택사항)
-    internal init(peripheral: CBPeripheral, name: String, rssi: NSNumber? = nil) {
+    internal init(peripheral: CBPeripheral, name: String) {
         self.peripheral = peripheral
         self.name = name
-        self.rssi = rssi
     }
     
     /// 두 BluetoothDevice가 동일한지 비교합니다.
     ///
     /// 페리페럴의 식별자를 기준으로 동등성을 판단합니다.
-    public static func == (lhs: BluetoothDevice, rhs: BluetoothDevice) -> Bool {
+    internal static func == (lhs: BluetoothDevice, rhs: BluetoothDevice) -> Bool {
         return lhs.peripheral.identifier == rhs.peripheral.identifier
     }
 }
@@ -84,12 +69,12 @@ public struct BluetoothDevice: Identifiable, Equatable, @unchecked Sendable {
 public struct EEGReading: Sendable {
     /// 채널 1의 EEG 전압값 (마이크로볼트 단위)
     ///
-    /// 첫 번째 EEG 전극에서 측정된 전압입니다. 일반적으로 -200µV에서 +200µV 범위입니다.
+    /// 첫 번째 EEG 전극에서 측정된 전압입니다.
     public let channel1: Double  // µV
     
     /// 채널 2의 EEG 전압값 (마이크로볼트 단위)
     ///
-    /// 두 번째 EEG 전극에서 측정된 전압입니다. 일반적으로 -200µV에서 +200µV 범위입니다.
+    /// 두 번째 EEG 전극에서 측정된 전압입니다.
     public let channel2: Double  // µV
     
     /// 채널 1의 원시 ADC 값입니다.
@@ -107,7 +92,6 @@ public struct EEGReading: Sendable {
     /// 전극 연결 해제 상태를 나타냅니다.
     ///
     /// `true`일 때 전극이 피부에서 분리되었거나 접촉이 불량함을 의미합니다.
-    /// 이 상태에서는 EEG 데이터가 신뢰할 수 없습니다.
     public let leadOff: Bool
     
     /// 데이터가 측정된 시간입니다.
@@ -147,16 +131,10 @@ public struct EEGReading: Sendable {
 /// )
 /// ```
 public struct PPGReading: Sendable {
-    /// 적색 LED의 측정값입니다.
-    ///
-    /// 660nm 적색 LED에서 반사된 빛의 강도를 나타냅니다.
-    /// 값의 범위는 0에서 16,777,215 (24비트) 사이입니다.
+    /// 적색 LED에서 반사된 빛의 강도를 측정한 값입니다.
     public let red: Int
     
-    /// 적외선 LED의 측정값입니다.
-    ///
-    /// 940nm 적외선 LED에서 반사된 빛의 강도를 나타냅니다.
-    /// 값의 범위는 0에서 16,777,215 (24비트) 사이입니다.
+    /// 적외선 LED에서 반사된 빛의 강도를 측정한 값입니다.
     public let ir: Int
     
     /// 데이터가 측정된 시간입니다.
@@ -178,35 +156,31 @@ public struct PPGReading: Sendable {
 /// 3축 가속도계 센서 읽기값을 나타내는 구조체입니다.
 ///
 /// 이 구조체는 디바이스의 움직임과 방향을 감지하기 위한
-/// X, Y, Z축의 가속도 데이터를 포함합니다. 값은 중력 단위(g)의
-/// 정수 표현으로 제공됩니다.
+/// X, Y, Z축의 가속도 데이터를 포함합니다.
 ///
 /// ## 예시
 ///
 /// ```swift
 /// let accelReading = AccelerometerReading(
-///     x: 1024,   // 약 1g
-///     y: 0,      // 0g
-///     z: 0       // 0g
+///     x: 1024,   //
+///     y: 0,      //
+///     z: 0       //
 /// )
 /// ```
 public struct AccelerometerReading: Sendable {
     /// X축 가속도 값입니다.
     ///
     /// 디바이스의 좌우 방향 가속도를 나타냅니다.
-    /// 값의 범위는 일반적으로 -32,768에서 +32,767 사이입니다.
     public let x: Int16
     
     /// Y축 가속도 값입니다.
     ///
     /// 디바이스의 전후 방향 가속도를 나타냅니다.
-    /// 값의 범위는 일반적으로 -32,768에서 +32,767 사이입니다.
     public let y: Int16
     
     /// Z축 가속도 값입니다.
     ///
     /// 디바이스의 상하 방향 가속도를 나타냅니다.
-    /// 값의 범위는 일반적으로 -32,768에서 +32,767 사이입니다.
     public let z: Int16
     
     /// 데이터가 측정된 시간입니다.
@@ -230,8 +204,6 @@ public struct AccelerometerReading: Sendable {
 /// 디바이스 배터리 상태를 나타내는 구조체입니다.
 ///
 /// 연결된 센서 디바이스의 배터리 잔량을 백분율로 제공합니다.
-/// 이 정보는 사용자에게 충전 필요성을 알리고 데이터 수집
-/// 세션을 계획하는 데 도움이 됩니다.
 ///
 /// ## 예시
 ///
@@ -372,7 +344,7 @@ public enum ConnectionState: Sendable, Equatable {
 /// // ❌ 잘못된 사용법 - 직접 상태 생성하지 마세요
 /// // let fakeState = RecordingState.recording
 /// ```
-public enum RecordingState: Sendable {
+internal enum RecordingState: Sendable {
     /// 기록이 비활성화된 유휴 상태입니다.
     case idle
     
@@ -602,7 +574,7 @@ internal protocol BluetoothManagerDelegate: AnyObject, Sendable {
 
 /// 데이터 기록 이벤트를 처리하는 델리게이트 프로토콜입니다.
 ///
-/// DataRecorder의 기록 시작, 완료, 오류 이벤트를 모니터링하여
+/// DataRecorder의 기록 시작, 종료, 오류 이벤트를 모니터링하여
 /// 사용자에게 적절한 피드백을 제공할 수 있습니다.
 /// 기록 상태에 따른 UI 업데이트나 파일 관리에 유용합니다.
 ///

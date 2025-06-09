@@ -54,9 +54,6 @@
               <li class="nav-group-task">
                 <a href="../Enums/ConnectionState.html">ConnectionState</a>
               </li>
-              <li class="nav-group-task">
-                <a href="../Enums/RecordingState.html">RecordingState</a>
-              </li>
             </ul>
           </li>
           <li class="nav-group-name">
@@ -88,55 +85,25 @@
               <div class="declaration">
                 <div class="language">
                   
-                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BluetoothDevice</span> <span class="p">:</span> <span class="kt">Identifiable</span><span class="p">,</span> <span class="kt">Equatable</span><span class="p">,</span> <span class="kd">@unchecked</span> <span class="kt">Sendable</span></code></pre>
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">BluetoothDevice</span> <span class="p">:</span> <span class="kd">@unchecked</span> <span class="kt">Sendable</span></code></pre>
 
                 </div>
               </div>
-            <p>Bluetooth Low Energy 디바이스를 나타내는 구조체입니다.</p>
+            <p>Bluetooth 디바이스를 나타내는 구조체입니다.</p>
 
-<p>이 구조체는 스캔 중 발견된 BLE 디바이스의 정보를 캡슐화합니다.
-각 디바이스는 고유한 식별자를 가지며, Core Bluetooth 페리페럴 객체와
-디바이스의 표시 이름, 신호 강도 정보를 포함합니다.</p>
+<p>스캔 중 발견된 Bluetooth Low Energy (BLE) 디바이스의 정보를 담고 있습니다.
+이 구조체는 연결 대상 디바이스를 식별하고 연결 작업에 사용됩니다.</p>
 <h2 id='예시' class='heading'>예시</h2>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">device</span> <span class="o">=</span> <span class="kt">BluetoothDevice</span><span class="p">(</span>
-    <span class="nv">peripheral</span><span class="p">:</span> <span class="n">cbPeripheral</span><span class="p">,</span>
-    <span class="nv">name</span><span class="p">:</span> <span class="s">"LXB-001"</span><span class="p">,</span>
-    <span class="nv">rssi</span><span class="p">:</span> <span class="o">-</span><span class="mi">45</span>
-<span class="p">)</span>
-<span class="nf">print</span><span class="p">(</span><span class="s">"디바이스: </span><span class="se">\(</span><span class="n">device</span><span class="o">.</span><span class="n">name</span><span class="se">)</span><span class="s">, 신호강도: </span><span class="se">\(</span><span class="n">device</span><span class="o">.</span><span class="n">rssi</span><span class="se">)</span><span class="s">dBm"</span><span class="p">)</span>
+<pre class="highlight swift"><code><span class="c1">// 발견된 디바이스 목록에서 연결할 디바이스 선택</span>
+<span class="k">if</span> <span class="k">let</span> <span class="nv">device</span> <span class="o">=</span> <span class="n">bluetoothKit</span><span class="o">.</span><span class="n">discoveredDevices</span><span class="o">.</span><span class="n">first</span> <span class="p">{</span>
+    <span class="n">bluetoothKit</span><span class="o">.</span><span class="nf">connect</span><span class="p">(</span><span class="nv">to</span><span class="p">:</span> <span class="n">device</span><span class="p">)</span>
+<span class="p">}</span>
 </code></pre>
 
           </section>
           <section class="section task-group-section">
             <div class="task-group">
               <ul>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:12BluetoothKit0A6DeviceV2id10Foundation4UUIDVvp"></a>
-                    <a name="//apple_ref/swift/Property/id" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12BluetoothKit0A6DeviceV2id10Foundation4UUIDVvp">id</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>SwiftUI 목록에서 사용되는 고유 식별자입니다.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">id</span><span class="p">:</span> <span class="kt">UUID</span></code></pre>
-
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-                </li>
                 <li class="item">
                   <div>
                     <code>
@@ -161,66 +128,6 @@
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">name</span><span class="p">:</span> <span class="kt">String</span></code></pre>
-
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:12BluetoothKit0A6DeviceV4rssiSo8NSNumberCSgvp"></a>
-                    <a name="//apple_ref/swift/Property/rssi" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12BluetoothKit0A6DeviceV4rssiSo8NSNumberCSgvp">rssi</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>수신 신호 강도 표시값(RSSI)입니다.</p>
-
-<p>dBm 단위로 측정된 신호 강도를 나타냅니다.
-값이 0에 가까울수록 신호가 강하며, 일반적으로 -30에서 -100 범위입니다.
-디바이스가 스캔 중이 아닐 때는 <code>nil</code>일 수 있습니다.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">rssi</span><span class="p">:</span> <span class="kt">NSNumber</span><span class="p">?</span></code></pre>
-
-                        </div>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:12BluetoothKit0A6DeviceV2eeoiySbAC_ACtFZ"></a>
-                    <a name="//apple_ref/swift/Method/==(_:_:)" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12BluetoothKit0A6DeviceV2eeoiySbAC_ACtFZ">==(_:<wbr>_:<wbr>)</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>두 BluetoothDevice가 동일한지 비교합니다.</p>
-
-<p>페리페럴의 식별자를 기준으로 동등성을 판단합니다.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="o">==</span> <span class="p">(</span><span class="nv">lhs</span><span class="p">:</span> <span class="kt">BluetoothDevice</span><span class="p">,</span> <span class="nv">rhs</span><span class="p">:</span> <span class="kt">BluetoothDevice</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Bool</span></code></pre>
 
                         </div>
                       </div>

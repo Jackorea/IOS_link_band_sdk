@@ -173,7 +173,7 @@ internal class BluetoothManager: NSObject, @unchecked Sendable {
         
         // 디바이스가 이미 존재하는지 확인합니다
         if !discoveredDevices.contains(where: { $0.peripheral.identifier == peripheral.identifier }) {
-            let device = BluetoothDevice(peripheral: peripheral, name: name, rssi: rssi)
+            let device = BluetoothDevice(peripheral: peripheral, name: name)
             discoveredDevices.append(device)
             
             notifyDeviceDiscovered(device)
@@ -348,7 +348,7 @@ extension BluetoothManager: CBCentralManagerDelegate {
     /// 연결 상태를 적절히 업데이트합니다.
     ///
     /// - Parameter central: 상태가 변경된 Central Manager
-    public func centralManagerDidUpdateState(_ central: CBCentralManager) {
+    internal func centralManagerDidUpdateState(_ central: CBCentralManager) {
         switch central.state {
         case .poweredOn:
             if case .failed(let error) = connectionState,
@@ -380,7 +380,7 @@ extension BluetoothManager: CBCentralManagerDelegate {
     ///   - peripheral: 발견된 BLE 페리페럴
     ///   - advertisementData: 광고 데이터
     ///   - RSSI: 신호 강도 (dBm)
-    public func centralManager(_ central: CBCentralManager,
+    internal func centralManager(_ central: CBCentralManager,
                               didDiscover peripheral: CBPeripheral,
                               advertisementData: [String : Any],
                               rssi RSSI: NSNumber) {
@@ -394,7 +394,7 @@ extension BluetoothManager: CBCentralManagerDelegate {
     /// - Parameters:
     ///   - central: 연결을 수행한 Central Manager
     ///   - peripheral: 연결된 페리페럴
-    public func centralManager(_ central: CBCentralManager,
+    internal func centralManager(_ central: CBCentralManager,
                               didConnect peripheral: CBPeripheral) {
         handleConnectionSuccess(peripheral)
     }
@@ -407,7 +407,7 @@ extension BluetoothManager: CBCentralManagerDelegate {
     ///   - central: 연결을 시도한 Central Manager
     ///   - peripheral: 연결에 실패한 페리페럴
     ///   - error: 연결 실패 원인
-    public func centralManager(_ central: CBCentralManager,
+    internal func centralManager(_ central: CBCentralManager,
                               didFailToConnect peripheral: CBPeripheral,
                               error: Error?) {
         handleConnectionFailure(peripheral, error: error)
@@ -422,7 +422,7 @@ extension BluetoothManager: CBCentralManagerDelegate {
     ///   - central: 연결 해제를 감지한 Central Manager
     ///   - peripheral: 연결이 해제된 페리페럴
     ///   - error: 연결 해제 원인 (자발적 해제인 경우 nil)
-    public func centralManager(_ central: CBCentralManager,
+    internal func centralManager(_ central: CBCentralManager,
                               didDisconnectPeripheral peripheral: CBPeripheral,
                               error: Error?) {
         handleDisconnection(peripheral, error: error)
@@ -440,7 +440,7 @@ extension BluetoothManager: CBPeripheralDelegate {
     /// - Parameters:
     ///   - peripheral: 서비스가 발견된 페리페럴
     ///   - error: 서비스 검색 중 발생한 오류
-    public func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
+    internal func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         guard let services = peripheral.services else { return }
         
         for service in services {
@@ -456,7 +456,7 @@ extension BluetoothManager: CBPeripheralDelegate {
     ///   - peripheral: 특성이 발견된 페리페럴
     ///   - service: 특성을 포함하는 서비스
     ///   - error: 특성 검색 중 발생한 오류
-    public func peripheral(_ peripheral: CBPeripheral,
+    internal func peripheral(_ peripheral: CBPeripheral,
                           didDiscoverCharacteristicsFor service: CBService,
                           error: Error?) {
         guard let characteristics = service.characteristics else { return }
@@ -476,7 +476,7 @@ extension BluetoothManager: CBPeripheralDelegate {
     ///   - peripheral: 값이 업데이트된 페리페럴
     ///   - characteristic: 값이 업데이트된 특성
     ///   - error: 값 읽기 중 발생한 오류
-    public func peripheral(_ peripheral: CBPeripheral,
+    internal func peripheral(_ peripheral: CBPeripheral,
                           didUpdateValueFor characteristic: CBCharacteristic,
                           error: Error?) {
         handleCharacteristicUpdate(characteristic, error: error)

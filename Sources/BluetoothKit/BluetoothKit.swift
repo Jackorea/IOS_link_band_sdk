@@ -340,7 +340,7 @@ public class BluetoothKit: ObservableObject, @unchecked Sendable {
 @available(iOS 13.0, macOS 10.15, *)
 extension BluetoothKit: BluetoothManagerDelegate {
     
-    public func bluetoothManager(_ manager: AnyObject, didUpdateState state: ConnectionState) {
+    internal func bluetoothManager(_ manager: AnyObject, didUpdateState state: ConnectionState) {
         connectionState = state
         isScanning = bluetoothManager.isScanning
         
@@ -352,17 +352,17 @@ extension BluetoothKit: BluetoothManagerDelegate {
         }
     }
     
-    public func bluetoothManager(_ manager: AnyObject, didDiscoverDevice device: BluetoothDevice) {
-        if !discoveredDevices.contains(device) {
+    internal func bluetoothManager(_ manager: AnyObject, didDiscoverDevice device: BluetoothDevice) {
+        if !discoveredDevices.contains(where: { $0.peripheral.identifier == device.peripheral.identifier }) {
             discoveredDevices.append(device)
         }
     }
     
-    public func bluetoothManager(_ manager: AnyObject, didConnectToDevice device: BluetoothDevice) {
+    internal func bluetoothManager(_ manager: AnyObject, didConnectToDevice device: BluetoothDevice) {
         // 연결 성공 로그 제거
     }
     
-    public func bluetoothManager(_ manager: AnyObject, didDisconnectFromDevice device: BluetoothDevice, error: Error?) {
+    internal func bluetoothManager(_ manager: AnyObject, didDisconnectFromDevice device: BluetoothDevice, error: Error?) {
         if let error = error {
             log("Disconnected from \(device.name) with error: \(error.localizedDescription)")
         }
@@ -375,7 +375,7 @@ extension BluetoothKit: BluetoothManagerDelegate {
 @available(iOS 13.0, macOS 10.15, *)
 extension BluetoothKit: SensorDataDelegate {
     
-    public func didReceiveEEGData(_ reading: EEGReading) {
+    internal func didReceiveEEGData(_ reading: EEGReading) {
         latestEEGReading = reading
         
         if isRecording {
@@ -383,7 +383,7 @@ extension BluetoothKit: SensorDataDelegate {
         }
     }
     
-    public func didReceivePPGData(_ reading: PPGReading) {
+    internal func didReceivePPGData(_ reading: PPGReading) {
         latestPPGReading = reading
         
         if isRecording {
@@ -391,7 +391,7 @@ extension BluetoothKit: SensorDataDelegate {
         }
     }
     
-    public func didReceiveAccelerometerData(_ reading: AccelerometerReading) {
+    internal func didReceiveAccelerometerData(_ reading: AccelerometerReading) {
         latestAccelerometerReading = reading
         
         if isRecording {
@@ -399,7 +399,7 @@ extension BluetoothKit: SensorDataDelegate {
         }
     }
     
-    public func didReceiveBatteryData(_ reading: BatteryReading) {
+    internal func didReceiveBatteryData(_ reading: BatteryReading) {
         latestBatteryReading = reading
         
         if isRecording {
@@ -413,16 +413,16 @@ extension BluetoothKit: SensorDataDelegate {
 @available(iOS 13.0, macOS 10.15, *)
 extension BluetoothKit: DataRecorderDelegate {
     
-    public func dataRecorder(_ recorder: AnyObject, didStartRecording at: Date) {
+    internal func dataRecorder(_ recorder: AnyObject, didStartRecording at: Date) {
         isRecording = true
     }
     
-    public func dataRecorder(_ recorder: AnyObject, didStopRecording at: Date, savedFiles: [URL]) {
+    internal func dataRecorder(_ recorder: AnyObject, didStopRecording at: Date, savedFiles: [URL]) {
         isRecording = false
         recordedFiles = savedFiles
     }
     
-    public func dataRecorder(_ recorder: AnyObject, didFailWithError error: Error) {
+    internal func dataRecorder(_ recorder: AnyObject, didFailWithError error: Error) {
         isRecording = false
         log("Recording failed: \(error.localizedDescription)")
     }
