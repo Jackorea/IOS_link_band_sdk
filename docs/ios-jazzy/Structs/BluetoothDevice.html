@@ -83,8 +83,8 @@
 <p>스캔 중 발견된 Bluetooth Low Energy (BLE) 디바이스의 정보를 담고 있습니다.
 이 구조체는 연결 대상 디바이스를 식별하고 연결 작업에 사용됩니다.</p>
 <h2 id='예시' class='heading'>예시</h2>
-<pre class="highlight swift"><code><span class="c1">// 발견된 디바이스 목록에서 연결할 디바이스 선택</span>
-<span class="k">if</span> <span class="k">let</span> <span class="nv">device</span> <span class="o">=</span> <span class="n">bluetoothKit</span><span class="o">.</span><span class="n">discoveredDevices</span><span class="o">.</span><span class="n">first</span> <span class="p">{</span>
+<pre class="highlight swift"><code><span class="c1">// 특정 디바이스 연결</span>
+<span class="k">if</span> <span class="k">let</span> <span class="nv">device</span> <span class="o">=</span> <span class="n">bluetoothKit</span><span class="o">.</span><span class="n">discoveredDevices</span><span class="o">.</span><span class="nf">first</span><span class="p">(</span><span class="nv">where</span><span class="p">:</span> <span class="p">{</span> <span class="nv">$0</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="nf">contains</span><span class="p">(</span><span class="s">"LinkBand"</span><span class="p">)</span> <span class="p">})</span> <span class="p">{</span>
     <span class="n">bluetoothKit</span><span class="o">.</span><span class="nf">connect</span><span class="p">(</span><span class="nv">to</span><span class="p">:</span> <span class="n">device</span><span class="p">)</span>
 <span class="p">}</span>
 </code></pre>

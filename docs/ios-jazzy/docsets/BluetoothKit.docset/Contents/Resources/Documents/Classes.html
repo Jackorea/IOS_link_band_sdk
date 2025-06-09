@@ -97,47 +97,29 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>센서 디바이스 연결 및 생체의학 데이터 수집을 위한 포괄적인 Bluetooth Low Energy (BLE) 라이브러리입니다.</p>
+                        <p>LinkBand 센서에서 데이터를 읽고 연결을 관리하는 메인 클래스입니다.</p>
 
-<p><code>BluetoothKit</code>은 다음을 위한 간단한 인터페이스를 제공합니다:</p>
+<p>이 클래스는 Bluetooth Low Energy를 통해 LinkBand 디바이스와 통신하며,
+EEG, PPG, 가속도계, 배터리 데이터를 실시간으로 수신합니다.
+SwiftUI의 <code>@ObservableObject</code>로 구현되어 UI와 자동으로 동기화됩니다.</p>
+<h2 id='기본-사용법' class='heading'>기본 사용법</h2>
+<pre class="highlight swift"><code><span class="kd">@StateObject</span> <span class="kd">private</span> <span class="k">var</span> <span class="nv">bluetoothKit</span> <span class="o">=</span> <span class="kt">BluetoothKit</span><span class="p">()</span>
 
-<ul>
-<li>Bluetooth 디바이스 스캔 및 연결</li>
-<li>실시간 센서 데이터 수신 (EEG, PPG, 가속도계, 배터리)</li>
-<li>파일로 데이터 기록</li>
-<li>자동 재연결을 통한 연결 상태 관리</li>
-</ul>
-<h2 id='사용법' class='heading'>사용법</h2>
-<pre class="highlight swift"><code><span class="kd">import</span> <span class="kt">SwiftUI</span>
-<span class="kd">import</span> <span class="kt">BluetoothKit</span>
+<span class="c1">// 1. 디바이스 스캔</span>
+<span class="n">bluetoothKit</span><span class="o">.</span><span class="nf">startScanning</span><span class="p">()</span>
 
-<span class="kd">struct</span> <span class="kt">ContentView</span><span class="p">:</span> <span class="kt">View</span> <span class="p">{</span>
-    <span class="kd">@StateObject</span> <span class="kd">private</span> <span class="k">var</span> <span class="nv">bluetoothKit</span> <span class="o">=</span> <span class="kt">BluetoothKit</span><span class="p">()</span>
-
-    <span class="k">var</span> <span class="nv">body</span><span class="p">:</span> <span class="kd">some</span> <span class="kt">View</span> <span class="p">{</span>
-        <span class="kt">VStack</span> <span class="p">{</span>
-            <span class="kt">Text</span><span class="p">(</span><span class="s">"상태: </span><span class="se">\(</span><span class="n">bluetoothKit</span><span class="o">.</span><span class="n">connectionStatusDescription</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
-
-            <span class="kt">Button</span><span class="p">(</span><span class="s">"스캔 시작"</span><span class="p">)</span> <span class="p">{</span>
-                <span class="n">bluetoothKit</span><span class="o">.</span><span class="nf">startScanning</span><span class="p">()</span>
-            <span class="p">}</span>
-            <span class="o">.</span><span class="nf">disabled</span><span class="p">(</span><span class="o">!</span><span class="n">bluetoothKit</span><span class="o">.</span><span class="n">isConnected</span> <span class="o">&amp;&amp;</span> <span class="n">bluetoothKit</span><span class="o">.</span><span class="n">isScanning</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="k">let</span> <span class="nv">eegReading</span> <span class="o">=</span> <span class="n">bluetoothKit</span><span class="o">.</span><span class="n">latestEEGReading</span> <span class="p">{</span>
-                <span class="kt">Text</span><span class="p">(</span><span class="s">"EEG: </span><span class="se">\(</span><span class="n">eegReading</span><span class="o">.</span><span class="n">channel1</span><span class="se">)</span><span class="s"> µV"</span><span class="p">)</span>
-            <span class="p">}</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
+<span class="c1">// 2. 디바이스 연결</span>
+<span class="k">if</span> <span class="k">let</span> <span class="nv">device</span> <span class="o">=</span> <span class="n">bluetoothKit</span><span class="o">.</span><span class="n">discoveredDevices</span><span class="o">.</span><span class="n">first</span> <span class="p">{</span>
+    <span class="n">bluetoothKit</span><span class="o">.</span><span class="nf">connect</span><span class="p">(</span><span class="nv">to</span><span class="p">:</span> <span class="n">device</span><span class="p">)</span>
 <span class="p">}</span>
-</code></pre>
-<h2 id='설정' class='heading'>설정</h2>
 
-<p><code>SensorConfiguration</code>을 사용하여 동작을 사용자 정의할 수 있습니다:</p>
-<pre class="highlight swift"><code><span class="k">let</span> <span class="nv">config</span> <span class="o">=</span> <span class="kt">SensorConfiguration</span><span class="p">(</span>
-    <span class="nv">eegSampleRate</span><span class="p">:</span> <span class="mf">500.0</span><span class="p">,</span>
-    <span class="nv">deviceNamePrefix</span><span class="p">:</span> <span class="s">"MyDevice-"</span>
-<span class="p">)</span>
-<span class="k">let</span> <span class="nv">bluetoothKit</span> <span class="o">=</span> <span class="kt">BluetoothKit</span><span class="p">(</span><span class="nv">configuration</span><span class="p">:</span> <span class="n">config</span><span class="p">)</span>
+<span class="c1">// 3. 데이터 기록</span>
+<span class="n">bluetoothKit</span><span class="o">.</span><span class="nf">startRecording</span><span class="p">()</span>
+
+<span class="c1">// 4. 센서 데이터 접근</span>
+<span class="k">if</span> <span class="k">let</span> <span class="nv">eeg</span> <span class="o">=</span> <span class="n">bluetoothKit</span><span class="o">.</span><span class="n">latestEEGReading</span> <span class="p">{</span>
+    <span class="nf">print</span><span class="p">(</span><span class="s">"EEG: </span><span class="se">\(</span><span class="n">eeg</span><span class="o">.</span><span class="n">channel1</span><span class="se">)</span><span class="s">µV, </span><span class="se">\(</span><span class="n">eeg</span><span class="o">.</span><span class="n">channel2</span><span class="se">)</span><span class="s">µV"</span><span class="p">)</span>
+<span class="p">}</span>
 </code></pre>
 
                         <a href="Classes/BluetoothKit.html" class="slightly-smaller">See more</a>

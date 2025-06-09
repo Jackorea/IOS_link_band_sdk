@@ -11,8 +11,8 @@ import CoreBluetooth
 /// ## 예시
 ///
 /// ```swift
-/// // 발견된 디바이스 목록에서 연결할 디바이스 선택
-/// if let device = bluetoothKit.discoveredDevices.first {
+/// // 특정 디바이스 연결
+/// if let device = bluetoothKit.discoveredDevices.first(where: { $0.name.contains("LinkBand") }) {
 ///     bluetoothKit.connect(to: device)
 /// }
 /// ```
