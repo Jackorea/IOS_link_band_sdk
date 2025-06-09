@@ -352,7 +352,7 @@ internal enum RecordingState: Sendable {
     case recording
     
     /// 현재 기록 중인지 여부를 나타내는 편의 속성입니다.
-    public var isRecording: Bool {
+    internal var isRecording: Bool {
         return self == .recording
     }
 }
