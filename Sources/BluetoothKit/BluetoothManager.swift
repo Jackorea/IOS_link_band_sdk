@@ -352,7 +352,7 @@ extension BluetoothManager: CBCentralManagerDelegate {
         switch central.state {
         case .poweredOn:
             if case .failed(let error) = connectionState,
-               error == .bluetoothUnavailable {
+               error.localizedDescription == BluetoothKitError.bluetoothUnavailable.localizedDescription {
                 connectionState = .disconnected
             }
             

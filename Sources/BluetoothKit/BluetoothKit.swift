@@ -22,11 +22,12 @@ import CoreBluetooth
 ///     
 ///     var body: some View {
 ///         VStack {
-///             Text("상태: \(bluetoothKit.connectionState.description)")
+///             Text("상태: \(bluetoothKit.connectionStatusDescription)")
 ///             
 ///             Button("스캔 시작") {
 ///                 bluetoothKit.startScanning()
 ///             }
+///             .disabled(!bluetoothKit.isConnected && bluetoothKit.isScanning)
 ///             
 ///             if let eegReading = bluetoothKit.latestEEGReading {
 ///                 Text("EEG: \(eegReading.channel1) µV")
@@ -58,16 +59,16 @@ public class BluetoothKit: ObservableObject, @unchecked Sendable {
     /// 디바이스는 설정된 디바이스 이름 접두사로 필터링됩니다.
     @Published public var discoveredDevices: [BluetoothDevice] = []
     
-    /// 현재 연결 상태.
+    /// 현재 연결 상태의 사용자 친화적인 설명.
     ///
-    /// 다양한 연결 상태를 처리하기 위해 이를 모니터링하세요:
-    /// - `.disconnected`: 활성 연결 없음
-    /// - `.scanning`: 현재 디바이스 스캔 중  
-    /// - `.connecting(deviceName)`: 디바이스 연결 시도 중
-    /// - `.connected(deviceName)`: 디바이스에 성공적으로 연결됨
-    /// - `.reconnecting(deviceName)`: 연결 해제 후 재연결 시도 중
-    /// - `.failed(error)`: 연결 또는 작업 실패
-    @Published public var connectionState: ConnectionState = .disconnected
+    /// 연결 상태를 사용자에게 표시하기 위한 한국어 문자열입니다:
+    /// - "연결 안됨": 활성 연결 없음
+    /// - "스캔 중...": 현재 디바이스 스캔 중  
+    /// - "[디바이스명]에 연결 중...": 디바이스 연결 시도 중
+    /// - "[디바이스명]에 연결됨": 디바이스에 성공적으로 연결됨
+    /// - "[디바이스명]에 재연결 중...": 연결 해제 후 재연결 시도 중
+    /// - "실패: [오류 메시지]": 연결 또는 작업 실패
+    @Published public var connectionStatusDescription: String = "연결 안됨"
     
     /// 라이브러리가 현재 디바이스를 스캔 중인지 여부.
     @Published public var isScanning: Bool = false
@@ -118,6 +119,11 @@ public class BluetoothKit: ObservableObject, @unchecked Sendable {
     ///
     /// Bluetooth가 꺼지면 자동으로 `true`로 설정됩니다.
     @Published public var isBluetoothDisabled: Bool = false
+    
+    // MARK: - Internal Properties
+    
+    /// 내부 연결 상태 (SDK 내부 사용만).
+    internal var connectionState: ConnectionState = .disconnected
     
     // MARK: - Private Components
     
@@ -196,7 +202,7 @@ public class BluetoothKit: ObservableObject, @unchecked Sendable {
     ///
     /// - Parameter device: `discoveredDevices`에서 얻은 연결할 디바이스.
     ///
-    /// 연결 진행 상황은 `connectionState`를 통해 모니터링할 수 있습니다.
+    /// 연결 진행 상황은 `connectionStatusDescription`을 통해 모니터링할 수 있습니다.
     /// 연결 성공 시, 센서 데이터가 자동으로 스트리밍을 시작합니다.
     ///
     /// ## 예시
@@ -207,15 +213,11 @@ public class BluetoothKit: ObservableObject, @unchecked Sendable {
     /// }
     /// 
     /// // 연결 상태 모니터링
-    /// switch bluetoothKit.connectionState {
-    /// case .connecting(let deviceName):
-    ///     print("\(deviceName)에 연결 중...")
-    /// case .connected(let deviceName):
-    ///     print("\(deviceName)에 연결됨")
-    /// case .failed(let error):
-    ///     print("연결 실패: \(error)")
-    /// default:
-    ///     break
+    /// Text("연결 상태: \(bluetoothKit.connectionStatusDescription)")
+    /// 
+    /// // 연결 완료 확인
+    /// if bluetoothKit.isConnected {
+    ///     Text("데이터 수신 준비 완료")
     /// }
     /// ```
     public func connect(to device: BluetoothDevice) {
@@ -292,15 +294,6 @@ public class BluetoothKit: ObservableObject, @unchecked Sendable {
         return bluetoothManager.isConnected
     }
     
-    /// 현재 연결 상태 설명을 가져옵니다.
-    ///
-    /// - Returns: 현재 연결 상태를 설명하는 사람이 읽을 수 있는 문자열.
-    ///
-    /// UI 라벨에 상태를 표시하는 데 유용합니다.
-    public var connectionStatusDescription: String {
-        return connectionState.description
-    }
-    
     /// auto-reconnection을 활성화하거나 비활성화합니다.
     ///
     /// - Parameter enabled: 연결이 끊어졌을 때 자동으로 재연결할지 여부.
@@ -342,10 +335,11 @@ extension BluetoothKit: BluetoothManagerDelegate {
     
     internal func bluetoothManager(_ manager: AnyObject, didUpdateState state: ConnectionState) {
         connectionState = state
+        connectionStatusDescription = state.description
         isScanning = bluetoothManager.isScanning
         
         if case .failed(let error) = state,
-           error == .bluetoothUnavailable {
+           error.localizedDescription.contains("Bluetooth is not available") {
             isBluetoothDisabled = true
         } else {
             isBluetoothDisabled = false

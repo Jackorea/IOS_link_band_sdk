@@ -258,7 +258,7 @@ public struct BatteryReading: Sendable {
 /// // ❌ 잘못된 사용법 - 직접 생성하지 마세요
 /// // bluetoothKit.connectionState = .connected("FakeDevice")
 /// ```
-public enum ConnectionState: Sendable, Equatable {
+internal enum ConnectionState: Sendable, Equatable {
     /// 어떤 디바이스에도 연결되지 않은 상태입니다.
     case disconnected
     
@@ -283,7 +283,7 @@ public enum ConnectionState: Sendable, Equatable {
     /// 연결 또는 작업이 실패한 상태입니다.
     ///
     /// - Parameter error: 실패 원인을 나타내는 오류
-    case failed(BluetoothKitError)
+    case failed(Error)
     
     /// 연결 상태의 사용자 친화적인 한국어 설명입니다.
     public var description: String {
@@ -315,7 +315,7 @@ public enum ConnectionState: Sendable, Equatable {
         case (.reconnecting(let lhsName), .reconnecting(let rhsName)):
             return lhsName == rhsName
         case (.failed(let lhsError), .failed(let rhsError)):
-            return lhsError == rhsError
+            return lhsError.localizedDescription == rhsError.localizedDescription
         default:
             return false
         }
@@ -632,12 +632,9 @@ internal protocol DataRecorderDelegate: AnyObject, Sendable {
 /// // ✅ 올바른 사용법 - 오류 처리
 /// switch bluetoothKit.connectionState {
 /// case .failed(let error):
-///     switch error {
-///     case .bluetoothUnavailable:
+///     if error.localizedDescription.contains("Bluetooth is not available") {
 ///         showBluetoothOffAlert()
-///     case .connectionFailed(let reason):
-///         showConnectionError(reason)
-///     default:
+///     } else {
 ///         showGenericError(error.localizedDescription)
 ///     }
 /// default:
@@ -647,7 +644,7 @@ internal protocol DataRecorderDelegate: AnyObject, Sendable {
 /// // ❌ 잘못된 사용법 - 직접 오류 생성하지 마세요
 /// // let fakeError = BluetoothKitError.connectionFailed("fake")
 /// ```
-public enum BluetoothKitError: LocalizedError, Sendable, Equatable {
+internal enum BluetoothKitError: LocalizedError, Sendable, Equatable {
     /// Bluetooth가 비활성화되어 있거나 사용할 수 없는 상태입니다.
     case bluetoothUnavailable
     

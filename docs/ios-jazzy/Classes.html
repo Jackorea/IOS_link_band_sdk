@@ -44,17 +44,6 @@
             </ul>
           </li>
           <li class="nav-group-name">
-            <a href="Enums.html">Enumerations</a>
-            <ul class="nav-group-tasks">
-              <li class="nav-group-task">
-                <a href="Enums/BluetoothKitError.html">BluetoothKitError</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="Enums/ConnectionState.html">ConnectionState</a>
-              </li>
-            </ul>
-          </li>
-          <li class="nav-group-name">
             <a href="Structs.html">Structures</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
@@ -127,11 +116,12 @@
 
     <span class="k">var</span> <span class="nv">body</span><span class="p">:</span> <span class="kd">some</span> <span class="kt">View</span> <span class="p">{</span>
         <span class="kt">VStack</span> <span class="p">{</span>
-            <span class="kt">Text</span><span class="p">(</span><span class="s">"상태: </span><span class="se">\(</span><span class="n">bluetoothKit</span><span class="o">.</span><span class="n">connectionState</span><span class="o">.</span><span class="n">description</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+            <span class="kt">Text</span><span class="p">(</span><span class="s">"상태: </span><span class="se">\(</span><span class="n">bluetoothKit</span><span class="o">.</span><span class="n">connectionStatusDescription</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
 
             <span class="kt">Button</span><span class="p">(</span><span class="s">"스캔 시작"</span><span class="p">)</span> <span class="p">{</span>
                 <span class="n">bluetoothKit</span><span class="o">.</span><span class="nf">startScanning</span><span class="p">()</span>
             <span class="p">}</span>
+            <span class="o">.</span><span class="nf">disabled</span><span class="p">(</span><span class="o">!</span><span class="n">bluetoothKit</span><span class="o">.</span><span class="n">isConnected</span> <span class="o">&amp;&amp;</span> <span class="n">bluetoothKit</span><span class="o">.</span><span class="n">isScanning</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="k">let</span> <span class="nv">eegReading</span> <span class="o">=</span> <span class="n">bluetoothKit</span><span class="o">.</span><span class="n">latestEEGReading</span> <span class="p">{</span>
                 <span class="kt">Text</span><span class="p">(</span><span class="s">"EEG: </span><span class="se">\(</span><span class="n">eegReading</span><span class="o">.</span><span class="n">channel1</span><span class="se">)</span><span class="s"> µV"</span><span class="p">)</span>

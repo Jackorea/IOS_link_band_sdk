@@ -46,17 +46,6 @@
             </ul>
           </li>
           <li class="nav-group-name">
-            <a href="../Enums.html">Enumerations</a>
-            <ul class="nav-group-tasks">
-              <li class="nav-group-task">
-                <a href="../Enums/BluetoothKitError.html">BluetoothKitError</a>
-              </li>
-              <li class="nav-group-task">
-                <a href="../Enums/ConnectionState.html">ConnectionState</a>
-              </li>
-            </ul>
-          </li>
-          <li class="nav-group-name">
             <a href="../Structs.html">Structures</a>
             <ul class="nav-group-tasks">
               <li class="nav-group-task">
@@ -109,11 +98,12 @@
 
     <span class="k">var</span> <span class="nv">body</span><span class="p">:</span> <span class="kd">some</span> <span class="kt">View</span> <span class="p">{</span>
         <span class="kt">VStack</span> <span class="p">{</span>
-            <span class="kt">Text</span><span class="p">(</span><span class="s">"상태: </span><span class="se">\(</span><span class="n">bluetoothKit</span><span class="o">.</span><span class="n">connectionState</span><span class="o">.</span><span class="n">description</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+            <span class="kt">Text</span><span class="p">(</span><span class="s">"상태: </span><span class="se">\(</span><span class="n">bluetoothKit</span><span class="o">.</span><span class="n">connectionStatusDescription</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
 
             <span class="kt">Button</span><span class="p">(</span><span class="s">"스캔 시작"</span><span class="p">)</span> <span class="p">{</span>
                 <span class="n">bluetoothKit</span><span class="o">.</span><span class="nf">startScanning</span><span class="p">()</span>
             <span class="p">}</span>
+            <span class="o">.</span><span class="nf">disabled</span><span class="p">(</span><span class="o">!</span><span class="n">bluetoothKit</span><span class="o">.</span><span class="n">isConnected</span> <span class="o">&amp;&amp;</span> <span class="n">bluetoothKit</span><span class="o">.</span><span class="n">isScanning</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="k">let</span> <span class="nv">eegReading</span> <span class="o">=</span> <span class="n">bluetoothKit</span><span class="o">.</span><span class="n">latestEEGReading</span> <span class="p">{</span>
                 <span class="kt">Text</span><span class="p">(</span><span class="s">"EEG: </span><span class="se">\(</span><span class="n">eegReading</span><span class="o">.</span><span class="n">channel1</span><span class="se">)</span><span class="s"> µV"</span><span class="p">)</span>
@@ -179,9 +169,9 @@
                 <li class="item">
                   <div>
                     <code>
-                    <a name="/s:12BluetoothKitAAC15connectionStateAA010ConnectionD0Ovp"></a>
-                    <a name="//apple_ref/swift/Property/connectionState" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12BluetoothKitAAC15connectionStateAA010ConnectionD0Ovp">connectionState</a>
+                    <a name="/s:12BluetoothKitAAC27connectionStatusDescriptionSSvp"></a>
+                    <a name="//apple_ref/swift/Property/connectionStatusDescription" class="dashAnchor"></a>
+                    <a class="token" href="#/s:12BluetoothKitAAC27connectionStatusDescriptionSSvp">connectionStatusDescription</a>
                     </code>
                   </div>
                   <div class="height-container">
@@ -189,17 +179,17 @@
                     <section class="section">
                       <div class="pointer"></div>
                       <div class="abstract">
-                        <p>현재 연결 상태.</p>
+                        <p>현재 연결 상태의 사용자 친화적인 설명.</p>
 
-<p>다양한 연결 상태를 처리하기 위해 이를 모니터링하세요:</p>
+<p>연결 상태를 사용자에게 표시하기 위한 한국어 문자열입니다:</p>
 
 <ul>
-<li><code>.disconnected</code>: 활성 연결 없음</li>
-<li><code>.scanning</code>: 현재 디바이스 스캔 중<br></li>
-<li><code>.connecting(deviceName)</code>: 디바이스 연결 시도 중</li>
-<li><code>.connected(deviceName)</code>: 디바이스에 성공적으로 연결됨</li>
-<li><code>.reconnecting(deviceName)</code>: 연결 해제 후 재연결 시도 중</li>
-<li><code>.failed(error)</code>: 연결 또는 작업 실패</li>
+<li>&ldquo;연결 안됨&rdquo;: 활성 연결 없음</li>
+<li>&ldquo;스캔 중&hellip;&rdquo;: 현재 디바이스 스캔 중<br></li>
+<li>&ldquo;[디바이스명]에 연결 중&hellip;&rdquo;: 디바이스 연결 시도 중</li>
+<li>&ldquo;[디바이스명]에 연결됨&rdquo;: 디바이스에 성공적으로 연결됨</li>
+<li>&ldquo;[디바이스명]에 재연결 중&hellip;&rdquo;: 연결 해제 후 재연결 시도 중</li>
+<li>&ldquo;실패: [오류 메시지]&rdquo;: 연결 또는 작업 실패</li>
 </ul>
 
                       </div>
@@ -208,7 +198,7 @@
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">@Published</span>
-<span class="kd">public</span> <span class="k">var</span> <span class="nv">connectionState</span><span class="p">:</span> <span class="kt"><a href="../Enums/ConnectionState.html">ConnectionState</a></span> <span class="p">{</span> <span class="k">get</span> <span class="k">set</span> <span class="p">}</span></code></pre>
+<span class="kd">public</span> <span class="k">var</span> <span class="nv">connectionStatusDescription</span><span class="p">:</span> <span class="kt">String</span> <span class="p">{</span> <span class="k">get</span> <span class="k">set</span> <span class="p">}</span></code></pre>
 
                         </div>
                       </div>
@@ -645,7 +635,7 @@
                       <div class="abstract">
                         <p>특정 Bluetooth 디바이스에 연결합니다.</p>
 
-<p>연결 진행 상황은 <code><a href="../Classes/BluetoothKit.html#/s:12BluetoothKitAAC15connectionStateAA010ConnectionD0Ovp">connectionState</a></code>를 통해 모니터링할 수 있습니다.
+<p>연결 진행 상황은 <code><a href="../Classes/BluetoothKit.html#/s:12BluetoothKitAAC27connectionStatusDescriptionSSvp">connectionStatusDescription</a></code>을 통해 모니터링할 수 있습니다.
 연결 성공 시, 센서 데이터가 자동으로 스트리밍을 시작합니다.</p>
 <h2 id='예시' class='heading'>예시</h2>
 <pre class="highlight swift"><code><span class="k">if</span> <span class="k">let</span> <span class="nv">device</span> <span class="o">=</span> <span class="n">bluetoothKit</span><span class="o">.</span><span class="n">discoveredDevices</span><span class="o">.</span><span class="n">first</span> <span class="p">{</span>
@@ -653,15 +643,11 @@
 <span class="p">}</span>
 
 <span class="c1">// 연결 상태 모니터링</span>
-<span class="k">switch</span> <span class="n">bluetoothKit</span><span class="o">.</span><span class="n">connectionState</span> <span class="p">{</span>
-<span class="k">case</span> <span class="o">.</span><span class="nf">connecting</span><span class="p">(</span><span class="k">let</span> <span class="nv">deviceName</span><span class="p">):</span>
-    <span class="nf">print</span><span class="p">(</span><span class="s">"</span><span class="se">\(</span><span class="n">deviceName</span><span class="se">)</span><span class="s">에 연결 중..."</span><span class="p">)</span>
-<span class="k">case</span> <span class="o">.</span><span class="nf">connected</span><span class="p">(</span><span class="k">let</span> <span class="nv">deviceName</span><span class="p">):</span>
-    <span class="nf">print</span><span class="p">(</span><span class="s">"</span><span class="se">\(</span><span class="n">deviceName</span><span class="se">)</span><span class="s">에 연결됨"</span><span class="p">)</span>
-<span class="k">case</span> <span class="o">.</span><span class="nf">failed</span><span class="p">(</span><span class="k">let</span> <span class="nv">error</span><span class="p">):</span>
-    <span class="nf">print</span><span class="p">(</span><span class="s">"연결 실패: </span><span class="se">\(</span><span class="n">error</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
-<span class="k">default</span><span class="p">:</span>
-    <span class="k">break</span>
+<span class="kt">Text</span><span class="p">(</span><span class="s">"연결 상태: </span><span class="se">\(</span><span class="n">bluetoothKit</span><span class="o">.</span><span class="n">connectionStatusDescription</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+
+<span class="c1">// 연결 완료 확인</span>
+<span class="k">if</span> <span class="n">bluetoothKit</span><span class="o">.</span><span class="n">isConnected</span> <span class="p">{</span>
+    <span class="kt">Text</span><span class="p">(</span><span class="s">"데이터 수신 준비 완료"</span><span class="p">)</span>
 <span class="p">}</span>
 </code></pre>
 
@@ -875,39 +861,6 @@
                       <div>
                         <h4>Return Value</h4>
                         <p>디바이스가 연결되어 데이터 스트리밍 준비가 되었으면 <code>true</code>.</p>
-                      </div>
-                    </section>
-                  </div>
-                </li>
-                <li class="item">
-                  <div>
-                    <code>
-                    <a name="/s:12BluetoothKitAAC27connectionStatusDescriptionSSvp"></a>
-                    <a name="//apple_ref/swift/Property/connectionStatusDescription" class="dashAnchor"></a>
-                    <a class="token" href="#/s:12BluetoothKitAAC27connectionStatusDescriptionSSvp">connectionStatusDescription</a>
-                    </code>
-                  </div>
-                  <div class="height-container">
-                    <div class="pointer-container"></div>
-                    <section class="section">
-                      <div class="pointer"></div>
-                      <div class="abstract">
-                        <p>현재 연결 상태 설명을 가져옵니다.</p>
-
-<p>UI 라벨에 상태를 표시하는 데 유용합니다.</p>
-
-                      </div>
-                      <div class="declaration">
-                        <h4>Declaration</h4>
-                        <div class="language">
-                          <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">var</span> <span class="nv">connectionStatusDescription</span><span class="p">:</span> <span class="kt">String</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span></code></pre>
-
-                        </div>
-                      </div>
-                      <div>
-                        <h4>Return Value</h4>
-                        <p>현재 연결 상태를 설명하는 사람이 읽을 수 있는 문자열.</p>
                       </div>
                     </section>
                   </div>
