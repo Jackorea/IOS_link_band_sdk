@@ -253,10 +253,41 @@ public class BluetoothKit: ObservableObject, @unchecked Sendable {
     /// ```
     @Published public var isBluetoothDisabled: Bool = false
     
+    // MARK: - Batch Data Collection
+    
+    /// 배치 단위로 센서 데이터를 수신하는 델리게이트.
+    ///
+    /// 설정된 시간 간격이나 샘플 개수에 따라 센서 데이터를 배치로 받을 수 있습니다.
+    /// 개별 샘플 대신 배치로 처리하면 성능이 향상되고 더 효율적인 데이터 분석이 가능합니다.
+    ///
+    /// ## 예시
+    ///
+    /// ```swift
+    /// class DataProcessor: SensorBatchDataDelegate {
+    ///     func didReceiveEEGBatch(_ readings: [EEGReading]) {
+    ///         print("EEG 배치: \(readings.count)개 샘플")
+    ///     }
+    /// }
+    ///
+    /// bluetoothKit.batchDataDelegate = DataProcessor()
+    /// bluetoothKit.setDataCollection(timeInterval: 0.5, for: .eeg)
+    /// ```
+    public weak var batchDataDelegate: SensorBatchDataDelegate?
+    
     // MARK: - Internal Properties
     
     /// 내부 연결 상태 (SDK 내부 사용만).
     internal var connectionState: ConnectionState = .disconnected
+    
+    // MARK: - Batch Data Collection (Internal)
+    
+    /// 각 센서별 데이터 수집 설정
+    private var dataCollectionConfigs: [SensorType: DataCollectionConfig] = [:]
+    
+    /// 센서별 데이터 버퍼
+    private var eegBuffer: [EEGReading] = []
+    private var ppgBuffer: [PPGReading] = []
+    private var accelerometerBuffer: [AccelerometerReading] = []
     
     // MARK: - Private Components
     
@@ -424,7 +455,162 @@ public class BluetoothKit: ObservableObject, @unchecked Sendable {
         bluetoothManager.enableAutoReconnect(enabled)
     }
     
+    // MARK: - Batch Data Collection API
+    
+    /// 시간 간격을 기준으로 배치 데이터 수집을 설정합니다.
+    ///
+    /// 지정된 시간마다 해당 센서의 데이터를 배치로 수집하여 델리게이트에 전달합니다.
+    /// 시간 간격은 센서의 샘플링 레이트에 따라 적절한 샘플 개수로 자동 변환됩니다.
+    ///
+    /// - Parameters:
+    ///   - timeInterval: 배치 수집 간격 (초 단위, 0.04 ~ 10.0초)
+    ///   - sensorType: 설정할 센서 타입
+    ///
+    /// ## 예시
+    ///
+    /// ```swift
+    /// // EEG 데이터를 0.5초마다 배치로 수집 (125개 샘플)
+    /// bluetoothKit.setDataCollection(timeInterval: 0.5, for: .eeg)
+    ///
+    /// // PPG 데이터를 1초마다 배치로 수집 (50개 샘플)
+    /// bluetoothKit.setDataCollection(timeInterval: 1.0, for: .ppg)
+    ///
+    /// // 가속도계 데이터를 2초마다 배치로 수집 (60개 샘플)
+    /// bluetoothKit.setDataCollection(timeInterval: 2.0, for: .accelerometer)
+    /// ```
+    public func setDataCollection(timeInterval: TimeInterval, for sensorType: SensorType) {
+        let config = DataCollectionConfig(sensorType: sensorType, timeInterval: timeInterval)
+        dataCollectionConfigs[sensorType] = config
+        clearBuffer(for: sensorType)
+    }
+    
+    /// 샘플 개수를 기준으로 배치 데이터 수집을 설정합니다.
+    ///
+    /// 지정된 개수의 샘플이 누적되면 배치로 수집하여 델리게이트에 전달합니다.
+    /// 정확한 샘플 개수 제어가 필요한 신호 처리나 분석에 유용합니다.
+    ///
+    /// - Parameters:
+    ///   - sampleCount: 배치당 샘플 개수 (1 ~ 각 센서별 최대값)
+    ///   - sensorType: 설정할 센서 타입
+    ///
+    /// ## 예시
+    ///
+    /// ```swift
+    /// // EEG 데이터를 100개씩 배치로 수집
+    /// bluetoothKit.setDataCollection(sampleCount: 100, for: .eeg)
+    ///
+    /// // PPG 데이터를 25개씩 배치로 수집
+    /// bluetoothKit.setDataCollection(sampleCount: 25, for: .ppg)
+    ///
+    /// // 가속도계 데이터를 15개씩 배치로 수집
+    /// bluetoothKit.setDataCollection(sampleCount: 15, for: .accelerometer)
+    /// ```
+    public func setDataCollection(sampleCount: Int, for sensorType: SensorType) {
+        let config = DataCollectionConfig(sensorType: sensorType, sampleCount: sampleCount)
+        dataCollectionConfigs[sensorType] = config
+        clearBuffer(for: sensorType)
+    }
+    
+    /// 특정 센서의 배치 데이터 수집을 비활성화합니다.
+    ///
+    /// 해당 센서는 기본 동작(latest* 프로퍼티 업데이트)만 수행하고
+    /// 배치 델리게이트 호출은 중단됩니다.
+    ///
+    /// - Parameter sensorType: 비활성화할 센서 타입
+    ///
+    /// ## 예시
+    ///
+    /// ```swift
+    /// // EEG 배치 수집 중단
+    /// bluetoothKit.disableDataCollection(for: .eeg)
+    /// ```
+    public func disableDataCollection(for sensorType: SensorType) {
+        dataCollectionConfigs.removeValue(forKey: sensorType)
+        clearBuffer(for: sensorType)
+    }
+    
+    /// 모든 센서의 배치 데이터 수집을 비활성화합니다.
+    ///
+    /// ## 예시
+    ///
+    /// ```swift
+    /// bluetoothKit.disableAllDataCollection()
+    /// ```
+    public func disableAllDataCollection() {
+        dataCollectionConfigs.removeAll()
+        clearAllBuffers()
+    }
+    
     // MARK: - Private Setup
+    
+    /// 센서별 버퍼를 초기화합니다.
+    private func clearBuffer(for sensorType: SensorType) {
+        switch sensorType {
+        case .eeg:
+            eegBuffer.removeAll()
+        case .ppg:
+            ppgBuffer.removeAll()
+        case .accelerometer:
+            accelerometerBuffer.removeAll()
+        case .battery:
+            break // 배터리는 버퍼 없음
+        }
+    }
+    
+    /// 모든 센서 버퍼를 초기화합니다.
+    private func clearAllBuffers() {
+        eegBuffer.removeAll()
+        ppgBuffer.removeAll()
+        accelerometerBuffer.removeAll()
+    }
+    
+    /// EEG 데이터를 버퍼에 추가하고 배치 조건을 확인합니다.
+    private func addToEEGBuffer(_ reading: EEGReading) {
+        guard let config = dataCollectionConfigs[.eeg] else { return }
+        
+        eegBuffer.append(reading)
+        
+        if eegBuffer.count >= config.targetSampleCount {
+            let batch = Array(eegBuffer.prefix(config.targetSampleCount))
+            eegBuffer.removeFirst(config.targetSampleCount)
+            
+            DispatchQueue.main.async { [weak self] in
+                self?.batchDataDelegate?.didReceiveEEGBatch(batch)
+            }
+        }
+    }
+    
+    /// PPG 데이터를 버퍼에 추가하고 배치 조건을 확인합니다.
+    private func addToPPGBuffer(_ reading: PPGReading) {
+        guard let config = dataCollectionConfigs[.ppg] else { return }
+        
+        ppgBuffer.append(reading)
+        
+        if ppgBuffer.count >= config.targetSampleCount {
+            let batch = Array(ppgBuffer.prefix(config.targetSampleCount))
+            ppgBuffer.removeFirst(config.targetSampleCount)
+            
+            DispatchQueue.main.async { [weak self] in
+                self?.batchDataDelegate?.didReceivePPGBatch(batch)
+            }
+        }
+    }
+    
+    /// 가속도계 데이터를 버퍼에 추가하고 배치 조건을 확인합니다.
+    private func addToAccelerometerBuffer(_ reading: AccelerometerReading) {
+        guard let config = dataCollectionConfigs[.accelerometer] else { return }
+        
+        accelerometerBuffer.append(reading)
+        
+        if accelerometerBuffer.count >= config.targetSampleCount {
+            let batch = Array(accelerometerBuffer.prefix(config.targetSampleCount))
+            accelerometerBuffer.removeFirst(config.targetSampleCount)
+            
+            DispatchQueue.main.async { [weak self] in
+                self?.batchDataDelegate?.didReceiveAccelerometerBatch(batch)
+            }
+        }
+    }
     
     private func setupDelegates() {
         bluetoothManager.delegate = self
@@ -484,6 +670,8 @@ extension BluetoothKit: SensorDataDelegate {
         if isRecording {
             dataRecorder.recordEEGData([reading])
         }
+        
+        addToEEGBuffer(reading)
     }
     
     internal func didReceivePPGData(_ reading: PPGReading) {
@@ -492,6 +680,8 @@ extension BluetoothKit: SensorDataDelegate {
         if isRecording {
             dataRecorder.recordPPGData([reading])
         }
+        
+        addToPPGBuffer(reading)
     }
     
     internal func didReceiveAccelerometerData(_ reading: AccelerometerReading) {
@@ -500,6 +690,8 @@ extension BluetoothKit: SensorDataDelegate {
         if isRecording {
             dataRecorder.recordAccelerometerData([reading])
         }
+        
+        addToAccelerometerBuffer(reading)
     }
     
     internal func didReceiveBatteryData(_ reading: BatteryReading) {
@@ -507,6 +699,11 @@ extension BluetoothKit: SensorDataDelegate {
         
         if isRecording {
             dataRecorder.recordBatteryData(reading)
+        }
+        
+        // 배터리는 배치가 아닌 개별 업데이트로 처리
+        DispatchQueue.main.async { [weak self] in
+            self?.batchDataDelegate?.didReceiveBatteryUpdate(reading)
         }
     }
 }

@@ -706,4 +706,102 @@ internal enum BluetoothKitError: LocalizedError, Sendable, Equatable {
             return false
         }
     }
+}
+
+// MARK: - Public Data Collection API
+
+/// 센서 타입을 나타내는 열거형입니다.
+///
+/// 각 센서의 특성과 샘플링 레이트가 다르므로 타입별로 구분하여 처리합니다.
+public enum SensorType: String, CaseIterable, Sendable {
+    case eeg = "EEG"
+    case ppg = "PPG" 
+    case accelerometer = "Accelerometer"
+    case battery = "Battery"
+    
+    /// 각 센서의 샘플링 레이트를 반환합니다.
+    internal var sampleRate: Double {
+        switch self {
+        case .eeg: return 250.0
+        case .ppg: return 50.0
+        case .accelerometer: return 30.0
+        case .battery: return 1.0 / 60.0  // 1분마다
+        }
+    }
+}
+
+/// 배치 단위로 센서 데이터를 수신하는 델리게이트 프로토콜입니다.
+///
+/// 사용자가 설정한 시간 간격이나 샘플 개수에 따라 센서 데이터를 배치로 받을 수 있습니다.
+/// 실시간 개별 샘플 대신 원하는 크기의 데이터 배치를 받아 처리할 수 있어 성능이 향상됩니다.
+///
+/// ## 예시
+///
+/// ```swift
+/// class MyDataProcessor: SensorBatchDataDelegate {
+///     func didReceiveEEGBatch(_ readings: [EEGReading]) {
+///         print("EEG 배치 수신: \(readings.count)개 샘플")
+///         // FFT, 필터링 등 배치 처리
+///         processEEGBatch(readings)
+///     }
+///     
+///     func didReceivePPGBatch(_ readings: [PPGReading]) {
+///         print("PPG 배치 수신: \(readings.count)개 샘플")
+///         // 심박수 계산
+///         calculateHeartRate(from: readings)
+///     }
+/// }
+/// 
+/// // 설정
+/// bluetoothKit.batchDataDelegate = MyDataProcessor()
+/// bluetoothKit.setDataCollection(timeInterval: 0.5, for: .eeg)  // 0.5초마다
+/// bluetoothKit.setDataCollection(sampleCount: 25, for: .ppg)    // 25개씩
+/// ```
+public protocol SensorBatchDataDelegate: AnyObject {
+    /// EEG 데이터 배치가 수신되었을 때 호출됩니다.
+    ///
+    /// - Parameter readings: 설정된 크기의 EEG 읽기값 배열
+    func didReceiveEEGBatch(_ readings: [EEGReading])
+    
+    /// PPG 데이터 배치가 수신되었을 때 호출됩니다.
+    ///
+    /// - Parameter readings: 설정된 크기의 PPG 읽기값 배열
+    func didReceivePPGBatch(_ readings: [PPGReading])
+    
+    /// 가속도계 데이터 배치가 수신되었을 때 호출됩니다.
+    ///
+    /// - Parameter readings: 설정된 크기의 가속도계 읽기값 배열
+    func didReceiveAccelerometerBatch(_ readings: [AccelerometerReading])
+    
+    /// 배터리 데이터가 업데이트되었을 때 호출됩니다.
+    ///
+    /// 배터리는 배치가 아닌 개별 업데이트로 처리됩니다.
+    ///
+    /// - Parameter reading: 최신 배터리 읽기값
+    func didReceiveBatteryUpdate(_ reading: BatteryReading)
+}
+
+/// 데이터 수집 설정을 관리하는 내부 구조체입니다.
+internal struct DataCollectionConfig {
+    let sensorType: SensorType
+    let targetSampleCount: Int
+    
+    init(sensorType: SensorType, sampleCount: Int) {
+        self.sensorType = sensorType
+        self.targetSampleCount = max(1, min(sampleCount, Self.maxSampleCount(for: sensorType)))
+    }
+    
+    init(sensorType: SensorType, timeInterval: TimeInterval) {
+        self.sensorType = sensorType
+        let clampedInterval = max(Self.minTimeInterval, min(timeInterval, Self.maxTimeInterval))
+        let sampleCount = Int(clampedInterval * sensorType.sampleRate)
+        self.targetSampleCount = max(1, sampleCount)
+    }
+    
+    static let minTimeInterval: TimeInterval = 0.04    // 25ms (40Hz)
+    static let maxTimeInterval: TimeInterval = 10.0    // 10초
+    
+    static func maxSampleCount(for sensorType: SensorType) -> Int {
+        return Int(maxTimeInterval * sensorType.sampleRate)
+    }
 } 
