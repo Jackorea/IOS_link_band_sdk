@@ -106,7 +106,7 @@ public struct EEGReading: Sendable {
     ///   - ch2Raw: 채널 2 원시 ADC 값
     ///   - leadOff: 전극 연결 해제 상태
     ///   - timestamp: 측정 시간 (기본값: 현재 시간)
-    internal init(channel1: Double, channel2: Double, ch1Raw: Int32, ch2Raw: Int32, leadOff: Bool, timestamp: Date = Date()) {
+    public init(channel1: Double, channel2: Double, ch1Raw: Int32, ch2Raw: Int32, leadOff: Bool, timestamp: Date = Date()) {
         self.channel1 = channel1
         self.channel2 = channel2
         self.ch1Raw = ch1Raw
@@ -146,7 +146,7 @@ public struct PPGReading: Sendable {
     ///   - red: 적색 LED 측정값
     ///   - ir: 적외선 LED 측정값
     ///   - timestamp: 측정 시간 (기본값: 현재 시간)
-    internal init(red: Int, ir: Int, timestamp: Date = Date()) {
+    public init(red: Int, ir: Int, timestamp: Date = Date()) {
         self.red = red
         self.ir = ir
         self.timestamp = timestamp
@@ -193,7 +193,7 @@ public struct AccelerometerReading: Sendable {
     ///   - y: Y축 가속도값
     ///   - z: Z축 가속도값
     ///   - timestamp: 측정 시간 (기본값: 현재 시간)
-    internal init(x: Int16, y: Int16, z: Int16, timestamp: Date = Date()) {
+    public init(x: Int16, y: Int16, z: Int16, timestamp: Date = Date()) {
         self.x = x
         self.y = y
         self.z = z
@@ -226,7 +226,7 @@ public struct BatteryReading: Sendable {
     /// - Parameters:
     ///   - level: 배터리 잔량 (0-100%)
     ///   - timestamp: 측정 시간 (기본값: 현재 시간)
-    internal init(level: UInt8, timestamp: Date = Date()) {
+    public init(level: UInt8, timestamp: Date = Date()) {
         self.level = level
         self.timestamp = timestamp
     }
